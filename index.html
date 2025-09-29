@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Service Guarantee Chatbot (Beta)</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f7f9fc;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      height: 100vh;
+    }
+
+    /* Chat container left */
+    .chat-container {
+      flex: 1.5;
+      display: flex;
+      flex-direction: column;
+      background: #f1f5f9;
+      border-right: 1px solid #ddd;
+    }
+
+    .chat-box {
+      flex: 1;
+      overflow-y: auto;
+      padding: 15px;
+    }
+
+    .bubble {
+      max-width: 75%;
+      padding: 10px 14px;
+      margin: 8px 0;
+      border-radius: 12px;
+      line-height: 1.4;
+      animation: fadeIn 0.3s ease;
+      word-wrap: break-word;
+    }
+
+    .bot {
+      background: #e2e8f0;
+      align-self: flex-start;
+    }
+
+    .user {
+      background: #3b82f6;
+      color: #fff;
+      align-self: flex-end;
+    }
+
+    .options button {
+      display: block;
+      width: 100%;
+      margin: 5px 0;
+      padding: 10px;
+      border: none;
+      border-radius: 8px;
+      background: #3b82f6;
+      color: #fff;
+      text-align: left;
+      cursor: pointer;
+    }
+
+    .options button:hover {
+      background: #2563eb;
+    }
+
+    .input-area {
+      display: flex;
+      border-top: 1px solid #ddd;
+      padding: 10px;
+      background: #fff;
+    }
+
+    .input-area input {
+      flex: 1;
+      padding: 10px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      margin-right: 10px;
+    }
+
+    .input-area button {
+      padding: 10px 15px;
+      background: #3b82f6;
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    /* Instructions right */
+    .instructions {
+      flex: 2;
+      padding: 40px;
+      background: #fff;
+      border-left: 1px solid #ddd;
+      overflow-y: auto;
+    }
+
+    .instructions h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+    }
+
+    .instructions ul {
+      padding-left: 20px;
+    }
+
+    .instructions li {
+      margin: 10px 0;
+    }
+
+    /* Loading animation */
+    .loading {
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      margin: 0 2px;
+      background: #666;
+      animation: blink 1.2s infinite both;
+    }
+
+    .loading:nth-child(2) { animation-delay: 0.2s; }
+    .loading:nth-child(3) { animation-delay: 0.4s; }
+
+    @keyframes blink {
+      0%, 80%, 100% { opacity: 0; }
+      40% { opacity: 1; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Chat UI left -->
+  <div class="chat-container">
+    <div class="chat-box" id="chat-box"></div>
+    <div class="input-area">
+      <input type="text" id="user-input" placeholder="Type your message here..." />
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+  <!-- Instructions right -->
+  <div class="instructions">
+    <h1>Welcome to the Service Guarantee Cancellation Chatbot (Beta)</h1>
+    <p>This assistant helps agents handle common service guarantee cases. Please note the following:</p>
+    <ul>
+      <li>It can only handle <b>simple guided tasks</b>.</li>
+      <li>It cannot read or process uploaded proofs yet.</li>
+      <li>It can validate if a <b>flight booking date</b> is past relative to the <b>hotel check-in date</b>.</li>
+      <li>It can check <b>missing proofs</b> and remind you to use the KA/QC script when asking guests.</li>
+      <li>This version is <b>testing / beta only</b>. Please provide feedback for improvements.</li>
+    </ul>
+  </div>
+
+  <script>
+    const chatBox = document.getElementById("chat-box");
+    const userInput = document.getElementById("user-input");
+    let currentStep = null;
+    let currentScenario = null;
+
+    const specialCircumstancesProofs = {
+      "emergency": ["Medical Record or Diagnosis Report", "Sick-leave Certificate", "Proof of Medical Charge"],
+      "be hospitalized": ["Medical Record or Diagnosis Report", "Hospitalization Certificate", "Proof of Medical Charge"],
+      "fracture": ["Medical Record or Diagnosis Report", "Sick-leave Certificate", "Proof of Medical Charge"],
+      "pregnancy": ["Medical Record or Diagnosis Report", "Sick-leave Certificate", "Proof of Medical Charge"],
+      "mental health": ["ESCALATE"],
+      "death": ["No proof needed"]
+    };
+
+    function addMessage(content, sender = "bot") {
+      const bubble = document.createElement("div");
+      bubble.className = `bubble ${sender}`;
+      bubble.innerHTML = content;
+      chatBox.appendChild(bubble);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function addButtons(options) {
+      const container = document.createElement("div");
+      container.className = "options";
+      options.forEach(opt => {
+        const btn = document.createElement("button");
+        btn.innerText = opt.text;
+        btn.onclick = opt.action;
+        container.appendChild(btn);
+      });
+      chatBox.appendChild(container);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function sendMessage() {
+      const text = userInput.value.trim();
+      if (!text) return;
+      addMessage(text, "user");
+      userInput.value = "";
+
+      processMessage(text.toLowerCase());
+    }
+
+    function processMessage(msg) {
+      if (msg.includes("cancel")) {
+        currentStep = "cancelFlow";
+        addMessage("Please select a reason:");
+        addButtons([
+          { text: "1️⃣ Flight-Hotel Guarantee", action: handleFlightHotel },
+          { text: "2️⃣ Special Circumstances", action: handleSpecialCircumstances }
+        ]);
+        return;
+      }
+
+      // fallback
+      addMessage("🤔 I’m not sure about that. Please check Service Guarantee links:<br>" +
+        "<a href='http://knowledgehub.basebiz.ctripcorp.com/webapp/sp/servicebible/knowledgesync/selectNew?currentBusinessTypeId=26&businessId=6938&subjectId=67740&sceneId=2523886%2C2523914%2C2523942&locale=en-US' target='_blank'>Flight-Hotel</a><br>" +
+        "<a href='http://knowledgehub.basebiz.ctripcorp.com/webapp/sp/servicebible/knowledgesync/selectNew?currentBusinessTypeId=26&businessId=6938&subjectId=67740&sceneId=2523886%2C2523914%2C2523977&locale=en-US' target='_blank'>Special Circumstances</a>");
+    }
+
+    function handleFlightHotel() {
+      addMessage("✈ Please provide booking dates (check-in to check-out). Example: 2025-10-01 to 2025-10-05");
+      currentStep = "flightDates";
+    }
+
+    function handleSpecialCircumstances() {
+      addMessage("Please select the case type:");
+      addButtons([
+        { text: "1️⃣ Hotel already rejected booking", action: () => {
+          addMessage("📌 Please send the script provided by KA/QC for rejected booking.");
+        }},
+        { text: "2️⃣ Insufficient Proof", action: () => {
+          addMessage("⚠️ What is the special circumstance?");
+          addButtons(Object.keys(specialCircumstancesProofs).map(key => ({
+            text: key.charAt(0).toUpperCase() + key.slice(1),
+            action: () => handleScenario(key)
+          })));
+        }}
+      ]);
+    }
+
+    function handleScenario(scenario) {
+      currentScenario = scenario;
+      if (scenario === "mental health") {
+        addMessage("⚠️ Please escalate this case directly for KA/QC handling.");
+        currentStep = null;
+      } else if (scenario === "death") {
+        addMessage("✔ No proof required. Remark 'canceled due to death' and indicate relationship.");
+        currentStep = null;
+      } else {
+        addMessage(`What proofs were provided for ${scenario}? (Enter them in one line, separated by commas)`);
+        currentStep = "checkProof";
+      }
+    }
+
+    function checkProofs(input) {
+      const provided = input.split(",").map(p => p.trim().toLowerCase());
+      const required = specialCircumstancesProofs[currentScenario].map(p => p.toLowerCase());
+
+      const missing = required.filter(req => !provided.some(p => p.includes(req.split(" ")[0])));
+
+      if (missing.length === 0) {
+        addMessage("✔ All required proofs are provided. Proceed with service guarantee flow.");
+      } else {
+        addMessage("📌 Missing proofs detected:");
+        missing.forEach(m => addMessage(" - " + m));
+        addMessage("📌 Please ask the guest for the missing/insufficient proofs and use the KA/QC script.");
+      }
+      currentStep = null;
+    }
+
+    userInput.addEventListener("keydown", e => {
+      if (e.key === "Enter") {
+        if (currentStep === "checkProof") {
+          const text = userInput.value.trim();
+          if (text) {
+            addMessage(text, "user");
+            userInput.value = "";
+            checkProofs(text);
+          }
+        } else {
+          sendMessage();
+        }
+      }
+    });
+
+    // Greeting
+    window.onload = () => {
+      addMessage("👋 Hi! I’m your Service Guarantee Assistant. Type <b>cancel</b> to start a workflow.");
+    };
+  </script>
+</body>
+</html>

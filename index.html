@@ -154,7 +154,7 @@
       <li>It can check <b>missing proofs</b> and remind you to use the KA/QC script when asking guests.</li>
       <li>This version is <b>testing / beta only</b>. Please provide feedback for improvements.</li>
       <ul>
-      <l1><b>Other features:</b></l1>
+      <li><b>Other features:</b></l1>
       <li>Case sensitive. Start of the word should be Capitalized</li>
       <li>Space character is not accepted only comma</li>
       <li>Typical greeting is not accepted. To start the function, you must type cancel</li>
@@ -171,7 +171,7 @@
 
     const specialCircumstancesProofs = {
       "emergency": ["Medical Record or Diagnosis Report", "Sick-leave Certificate", "Proof of Medical Charge", "proof of billing","proof of charge"],
-      "be hospitalized": ["Medical Record or Diagnosis Report", "Hospitalization Certificate", "Proof of Medical Charge", "proof of billing", "proof of charge")],
+      "be hospitalized": ["Medical Record or Diagnosis Report", "Hospitalization Certificate", "Proof of Medical Charge", "proof of billing", "proof of charge"],
       "fracture": ["Medical Record or Diagnosis Report", "Sick-leave Certificate", "Proof of Medical Charge"],
       "pregnancy": ["Medical Record or Diagnosis Report", "Sick-leave Certificate", "Proof of Medical Charge"],
       "mental health": ["ESCALATE"],
@@ -209,9 +209,9 @@
     }
 
     function processMessage(msg) {
-      if (msg.includes("cancel")) {
+      if (["cancel", "hi", "hello"].some(word => msg.includes(word))) {
         currentStep = "cancelFlow";
-        addMessage("Please select a reason:");
+        addMessage("Hello! Are you inquiring about?:");
         addButtons([
           { text: "1️⃣ Flight-Hotel Guarantee", action: handleFlightHotel },
           { text: "2️⃣ Special Circumstances", action: handleSpecialCircumstances }
@@ -249,7 +249,7 @@
     function handleScenario(scenario) {
       currentScenario = scenario;
       if (scenario === "mental health") {
-        addMessage("⚠️ Please escalate this case directly for KA/QC handling.");
+        addMessage("⚠️ Please escalate this case to CS Team.");
         currentStep = null;
       } else if (scenario === "death") {
         addMessage("✔ No proof required. Remark 'canceled due to death' and indicate relationship.");
@@ -264,7 +264,7 @@
       const provided = input.split(",").map(p => p.trim().toLowerCase());
       const required = specialCircumstancesProofs[currentScenario].map(p => p.toLowerCase());
 
-      const missing = required.filter(req => !provided.some(p => p.includes(req.split(" ")[0])));
+      const missing = required.filter(req => !provided.includes(req.toLowerCase()));
 
       if (missing.length === 0) {
         addMessage("✔ All required proofs are provided. Proceed with service guarantee flow.");
@@ -293,8 +293,8 @@
 
     // Greeting
     window.onload = () => {
-      addMessage("👋 Hi! I’m your Service Guarantee Assistant. Type <b>cancel</b> to start a workflow.");
-    };
+    addMessage("👋 Hi! I’m your Service Guarantee Assistant. Type <b>cancel</b> to start a workflow.");
+    userInput.focus();
   </script>
 </body>
 </html>

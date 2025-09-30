@@ -13,7 +13,7 @@
       height: 100vh;
     }
 
-    /* Chat container left */
+    /* Chat container (left side) */
     .chat-container {
       flex: 1.5;
       display: flex;
@@ -90,7 +90,7 @@
       cursor: pointer;
     }
 
-    /* Instructions right */
+    /* Instructions (right side) */
     .instructions {
       flex: 2;
       padding: 40px;
@@ -134,7 +134,7 @@
 </head>
 <body>
 
-  <!-- Chat UI left -->
+  <!-- Chat UI (left side) -->
   <div class="chat-container">
     <div class="chat-box" id="chat-box"></div>
     <div class="input-area">
@@ -143,7 +143,7 @@
     </div>
   </div>
 
-  <!-- Instructions right -->
+  <!-- Instructions (right side) -->
   <div class="instructions">
     <h1>Welcome to the Service Guarantee Cancellation Chatbot (Beta)</h1>
     <p>This assistant helps agents handle common service guarantee cases. Please note the following:</p>
@@ -153,13 +153,13 @@
       <li>It can validate if a <b>flight booking date</b> is past relative to the <b>hotel check-in date</b>.</li>
       <li>It can check <b>missing proofs</b> and remind you to use the KA/QC script when asking guests.</li>
       <li>This version is <b>testing / beta only</b>. Please provide feedback for improvements.</li>
-      <ul>
-      <li><b>Other features:</b></l1>
-      <li>Case sensitive. Start of the word should be Capitalized</li>
-      <li>Space character is not accepted only comma</li>
-      <li>Typical greeting is not accepted. To start the function, you must type cancel</li>
-      <li>If the keyword is not recognized it will provide a KH link. </li>
-      <ul>
+    </ul>
+    <h2>Other notes:</h2>
+    <ul>
+      <li>Case sensitive – start of the word should be capitalized.</li>
+      <li>Use commas (no spaces) when entering multiple proofs.</li>
+      <li>Typical greetings are not accepted. To start, type <b>cancel</b>.</li>
+      <li>If the keyword is not recognized, the bot will provide a KH link.</li>
     </ul>
   </div>
 
@@ -170,8 +170,8 @@
     let currentScenario = null;
 
     const specialCircumstancesProofs = {
-      "emergency": ["Medical Record or Diagnosis Report", "Sick-leave Certificate", "Proof of Medical Charge", "proof of billing","proof of charge"],
-      "be hospitalized": ["Medical Record or Diagnosis Report", "Hospitalization Certificate", "Proof of Medical Charge", "proof of billing", "proof of charge"],
+      "emergency": ["Medical Record or Diagnosis Report", "Sick-leave Certificate", "Proof of Medical Charge", "Proof of Billing", "Proof of Charge"],
+      "be hospitalized": ["Medical Record or Diagnosis Report", "Hospitalization Certificate", "Proof of Medical Charge", "Proof of Billing", "Proof of Charge"],
       "fracture": ["Medical Record or Diagnosis Report", "Sick-leave Certificate", "Proof of Medical Charge"],
       "pregnancy": ["Medical Record or Diagnosis Report", "Sick-leave Certificate", "Proof of Medical Charge"],
       "mental health": ["ESCALATE"],
@@ -202,9 +202,18 @@
     function sendMessage() {
       const text = userInput.value.trim();
       if (!text) return;
+
+      // If we are in proof-checking step, handle separately
+      if (currentStep === "checkProof") {
+        addMessage(text, "user");
+        userInput.value = "";
+        checkProofs(text);
+        return;
+      }
+
+      // Normal flow
       addMessage(text, "user");
       userInput.value = "";
-
       processMessage(text.toLowerCase());
     }
 
@@ -264,7 +273,7 @@
       const provided = input.split(",").map(p => p.trim().toLowerCase());
       const required = specialCircumstancesProofs[currentScenario].map(p => p.toLowerCase());
 
-      const missing = required.filter(req => !provided.includes(req.toLowerCase()));
+      const missing = required.filter(req => !provided.includes(req));
 
       if (missing.length === 0) {
         addMessage("✔ All required proofs are provided. Proceed with service guarantee flow.");
@@ -278,24 +287,15 @@
 
     userInput.addEventListener("keydown", e => {
       if (e.key === "Enter") {
-        if (currentStep === "checkProof") {
-          const text = userInput.value.trim();
-          if (text) {
-            addMessage(text, "user");
-            userInput.value = "";
-            checkProofs(text);
-          }
-        } else {
-          sendMessage();
-        }
+        sendMessage();
       }
     });
 
     // Greeting
     window.onload = () => {
-    addMessage("👋 Hi! I’m your Service Guarantee Assistant. Type <b>cancel</b> to start a workflow.");
-    userInput.focus();
-    }
+      addMessage("👋 Hi! I’m your Service Guarantee Assistant. Type <b>cancel</b> to start a workflow.");
+      userInput.focus();
+    };
   </script>
 </body>
 </html>

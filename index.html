@@ -1,201 +1,116 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Service Guarantee Chatbot (Beta)</title>
+  <meta charset="UTF-8" />
+  <title>Service Guarantee Chatbot</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background: #f7f9fc;
       margin: 0;
-      padding: 0;
       display: flex;
       height: 100vh;
+      background: #f5f7fa;
     }
-
-    /* Chat container (left side) */
+    .instructions {
+      flex: 1;
+      padding: 20px;
+      background: #fff;
+      overflow-y: auto;
+    }
     .chat-container {
-      flex: 1.5;
+      flex: 1;
       display: flex;
       flex-direction: column;
-      background: #f1f5f9;
-      border-right: 1px solid #ddd;
+      background: #e9eff5;
+      border-left: 2px solid #ccc;
     }
-
     .chat-box {
       flex: 1;
+      padding: 20px;
       overflow-y: auto;
-      padding: 15px;
     }
-
-    .bubble {
-      max-width: 75%;
-      padding: 10px 14px;
-      margin: 8px 0;
-      border-radius: 12px;
-      line-height: 1.4;
-      animation: fadeIn 0.3s ease;
-      word-wrap: break-word;
-    }
-
-    .bot {
-      background: #e2e8f0;
-      align-self: flex-start;
-    }
-
-    .user {
-      background: #3b82f6;
-      color: #fff;
-      align-self: flex-end;
-    }
-
-    .options button {
-      display: block;
-      width: 100%;
-      margin: 5px 0;
-      padding: 10px;
-      border: none;
-      border-radius: 8px;
-      background: #3b82f6;
-      color: #fff;
-      text-align: left;
-      cursor: pointer;
-    }
-
-    .options button:hover {
-      background: #2563eb;
-    }
-
-    .input-area {
+    .chat-input {
       display: flex;
-      border-top: 1px solid #ddd;
       padding: 10px;
       background: #fff;
+      border-top: 1px solid #ccc;
     }
-
-    .input-area input {
+    .chat-input input {
       flex: 1;
       padding: 10px;
       border: 1px solid #ccc;
-      border-radius: 8px;
-      margin-right: 10px;
+      border-radius: 5px;
     }
-
-    .input-area button {
-      padding: 10px 15px;
-      background: #3b82f6;
-      color: #fff;
+    .chat-input button {
+      margin-left: 10px;
+      padding: 10px 20px;
       border: none;
-      border-radius: 8px;
+      background: #007bff;
+      color: #fff;
+      border-radius: 5px;
       cursor: pointer;
     }
-
-    /* Instructions (right side) */
-    .instructions {
-      flex: 2;
-      padding: 40px;
-      background: #fff;
-      border-left: 1px solid #ddd;
-      overflow-y: auto;
+    .bubble {
+      max-width: 70%;
+      padding: 10px;
+      margin: 5px 0;
+      border-radius: 15px;
+      line-height: 1.4;
     }
-
-    .instructions h1 {
-      font-size: 24px;
-      margin-bottom: 20px;
+    .bot {
+      background: #007bff;
+      color: white;
+      align-self: flex-start;
     }
-
-    .instructions ul {
-      padding-left: 20px;
-    }
-
-    .instructions li {
-      margin: 10px 0;
-    }
-
-    /* Loading animation */
-    .loading {
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      margin: 0 2px;
-      background: #666;
-      animation: blink 1.2s infinite both;
-    }
-
-    .loading:nth-child(2) { animation-delay: 0.2s; }
-    .loading:nth-child(3) { animation-delay: 0.4s; }
-
-    @keyframes blink {
-      0%, 80%, 100% { opacity: 0; }
-      40% { opacity: 1; }
+    .user {
+      background: #ddd;
+      align-self: flex-end;
     }
   </style>
 </head>
 <body>
-
-  <!-- Chat UI (left side) -->
-  <div class="chat-container">
-    <div class="chat-box" id="chat-box"></div>
-    <div class="input-area">
-      <input type="text" id="user-input" placeholder="Type your message here..." />
-      <button onclick="sendMessage()">Send</button>
-    </div>
+  <div class="instructions">
+    <h2>Welcome to Service Guarantee Chatbot</h2>
+    <p>This chatbot helps test Service Guarantee scenarios. Please note:</p>
+    <ol>
+      <li>It can only handle simple tasks.</li>
+      <li>It cannot read proof documents yet.</li>
+      <li>It validates if Flight booking dates affect hotel check-in under F-H Guarantee rules.</li>
+      <li>It guides you on missing/insufficient proofs and reminds you to use KA/QC scripts.</li>
+      <li>This is a beta version for testing. Please provide feedback for improvements.</li>
+    </ol>
   </div>
 
-  <!-- Instructions (right side) -->
-  <div class="instructions">
-    <h1>Welcome to the Service Guarantee Cancellation Chatbot (Beta)</h1>
-    <p>This assistant helps agents handle common service guarantee cases. Please note the following:</p>
-    <ul>
-      <li>It can only handle <b>simple guided tasks</b>.</li>
-      <li>It cannot read or process uploaded proofs yet.</li>
-      <li>It can validate if a <b>flight booking date</b> is past relative to the <b>hotel check-in date</b>.</li>
-      <li>It can check <b>missing proofs</b> and remind you to use the KA/QC script when asking guests.</li>
-      <li>This version is <b>testing / beta only</b>. Please provide feedback for improvements.</li>
-    </ul>
-    <h2>Other notes:</h2>
-    <ul>
-      <li>Case sensitive – start of the word should be capitalized.</li>
-      <li>Use commas (no spaces) when entering multiple proofs.</li>
-      <li>Typical greetings are not accepted. To start, type <b>cancel</b>.</li>
-      <li>If the keyword is not recognized, the bot will provide a KH link.</li>
-    </ul>
+  <div class="chat-container">
+    <div id="chat-box" class="chat-box"></div>
+    <div class="chat-input">
+      <input id="user-input" type="text" placeholder="Type your message..." />
+      <button onclick="sendMessage()">Send</button>
+    </div>
   </div>
 
   <script>
     const chatBox = document.getElementById("chat-box");
     const userInput = document.getElementById("user-input");
+
     let currentStep = null;
     let currentScenario = null;
 
-    const specialCircumstancesProofs = {
-      "emergency": ["Medical Record or Diagnosis Report", "Sick-leave Certificate", "Proof of Medical Charge", "Proof of Billing", "Proof of Charge"],
-      "be hospitalized": ["Medical Record or Diagnosis Report", "Hospitalization Certificate", "Proof of Medical Charge", "Proof of Billing", "Proof of Charge"],
-      "fracture": ["Medical Record or Diagnosis Report", "Sick-leave Certificate", "Proof of Medical Charge"],
-      "pregnancy": ["Medical Record or Diagnosis Report", "Sick-leave Certificate", "Proof of Medical Charge"],
-      "mental health": ["ESCALATE"],
-      "death": ["No proof needed"]
+    const medicalProofs = {
+      emergency: ["medical record or diagnosis report", "sick-leave certificate", "proof of medical charge"],
+      "not suitable for travel": ["medical record or diagnosis report", "sick-leave certificate", "proof of medical charge"],
+      "be hospitalized": ["medical record or diagnosis report", "hospitalization certificate", "proof of medical charge"],
+      fracture: ["medical record or diagnosis report", "sick-leave certificate", "proof of medical charge"],
+      pregnancy: ["medical record or diagnosis report", "sick-leave certificate", "proof of medical charge"],
+      "mental health": null,
+      death: null
     };
 
-    function addMessage(content, sender = "bot") {
+    function addMessage(text, sender = "bot") {
       const bubble = document.createElement("div");
       bubble.className = `bubble ${sender}`;
-      bubble.innerHTML = content;
+      bubble.innerText = text;
       chatBox.appendChild(bubble);
-      chatBox.scrollTop = chatBox.scrollHeight;
-    }
-
-    function addButtons(options) {
-      const container = document.createElement("div");
-      container.className = "options";
-      options.forEach(opt => {
-        const btn = document.createElement("button");
-        btn.innerText = opt.text;
-        btn.onclick = opt.action;
-        container.appendChild(btn);
-      });
-      chatBox.appendChild(container);
       chatBox.scrollTop = chatBox.scrollHeight;
     }
 
@@ -203,99 +118,137 @@
       const text = userInput.value.trim();
       if (!text) return;
 
-      // If we are in proof-checking step, handle separately
-      if (currentStep === "checkProof") {
-        addMessage(text, "user");
-        userInput.value = "";
-        checkProofs(text);
-        return;
-      }
-
-      // Normal flow
       addMessage(text, "user");
       userInput.value = "";
-      processMessage(text.toLowerCase());
+      handleInput(text.toLowerCase());
     }
 
-    function processMessage(msg) {
-      if (["cancel", "hi", "hello"].some(word => msg.includes(word))) {
-        currentStep = "cancelFlow";
-        addMessage("Hello! Are you inquiring about?:");
-        addButtons([
-          { text: "1️⃣ Flight-Hotel Guarantee", action: handleFlightHotel },
-          { text: "2️⃣ Special Circumstances", action: handleSpecialCircumstances }
-        ]);
+    userInput.addEventListener("keypress", function (e) {
+      if (e.key === "Enter") sendMessage();
+    });
+
+    function handleInput(input) {
+      if (input === "cancel") {
+        addMessage("Please select an option:\n1️⃣ Flight-Hotel Guarantee\n2️⃣ Special Circumstances");
+        currentStep = "mainMenu";
         return;
       }
 
-      // fallback
-      addMessage("🤔 I’m not sure about that. Please check Service Guarantee links:<br>" +
-        "<a href='http://knowledgehub.basebiz.ctripcorp.com/webapp/sp/servicebible/knowledgesync/selectNew?currentBusinessTypeId=26&businessId=6938&subjectId=67740&sceneId=2523886%2C2523914%2C2523942&locale=en-US' target='_blank'>Flight-Hotel</a><br>" +
-        "<a href='http://knowledgehub.basebiz.ctripcorp.com/webapp/sp/servicebible/knowledgesync/selectNew?currentBusinessTypeId=26&businessId=6938&subjectId=67740&sceneId=2523886%2C2523914%2C2523977&locale=en-US' target='_blank'>Special Circumstances</a>");
-    }
+      if (currentStep === "mainMenu") {
+        if (input === "1") {
+          addMessage("Please enter your flight date and hotel check-in date in this format:\nYYYY-MM-DD to YYYY-MM-DD");
+          currentStep = "flightDates";
+        } else if (input === "2") {
+          addMessage("Select reason:\n1️⃣ Hotel rejected\n2️⃣ Insufficient Proof\n3️⃣ Special Circumstances");
+          currentStep = "specialMenu";
+        } else {
+          addMessage("❓ Not recognized. Please type 'cancel' to restart.");
+        }
+        return;
+      }
 
-    function handleFlightHotel() {
-      addMessage("✈ Please provide booking dates (check-in to check-out). Example: 2025-10-01 to 2025-10-05");
-      currentStep = "flightDates";
-    }
+      // Flight-Hotel Guarantee flow
+      if (currentStep === "flightDates") {
+        const datePattern = /^(\d{4}-\d{2}-\d{2})\s+to\s+(\d{4}-\d{2}-\d{2})$/;
+        const match = input.match(datePattern);
 
-    function handleSpecialCircumstances() {
-      addMessage("Please select the case type:");
-      addButtons([
-        { text: "1️⃣ Hotel already rejected booking", action: () => {
-          addMessage("📌 Please send the script provided by KA/QC for rejected booking.");
-        }},
-        { text: "2️⃣ Insufficient Proof", action: () => {
-          addMessage("⚠️ What is the special circumstance?");
-          addButtons(Object.keys(specialCircumstancesProofs).map(key => ({
-            text: key.charAt(0).toUpperCase() + key.slice(1),
-            action: () => handleScenario(key)
-          })));
-        }}
-      ]);
-    }
+        if (match) {
+          const flightDate = new Date(match[1]);
+          const hotelDate = new Date(match[2]);
 
-    function handleScenario(scenario) {
-      currentScenario = scenario;
-      if (scenario === "mental health") {
-        addMessage("⚠️ Please escalate this case to CS Team.");
+          if (flightDate > hotelDate) {
+            addMessage("⚠️ Flight arrival is after hotel check-in. Possible F-H Guarantee case.");
+            addMessage("✈️ Was this due to an involuntary airline change (cancellation or delay)? (yes/no)");
+            currentStep = "involuntaryChange";
+          } else {
+            addMessage("✔ Flight date does not conflict with hotel check-in. Not covered by F-H Guarantee.");
+            currentStep = null;
+          }
+        } else {
+          addMessage("⚠️ Please enter dates in format: YYYY-MM-DD to YYYY-MM-DD");
+        }
+        return;
+      }
+
+      if (currentStep === "involuntaryChange") {
+        if (input === "yes") {
+          addMessage("👤 Is the affected passenger also the hotel guest? (yes/no)");
+          currentStep = "passengerMatch";
+        } else {
+          addMessage("❌ Not covered: Guarantee only applies for involuntary airline changes.");
+          currentStep = null;
+        }
+        return;
+      }
+
+      if (currentStep === "passengerMatch") {
+        if (input === "yes") {
+          addMessage("✔ All conditions met. Proceed with Flight-Hotel Guarantee flow.");
+        } else {
+          addMessage("❌ Not covered: Passenger must match hotel guest.");
+        }
         currentStep = null;
-      } else if (scenario === "death") {
-        addMessage("✔ No proof required. Remark 'canceled due to death' and indicate relationship.");
+        return;
+      }
+
+      // Special Circumstances flow
+      if (currentStep === "specialMenu") {
+        if (input === "1") {
+          addMessage("📌 Please send the script provided by KA/QC for Hotel Rejected cases.");
+          currentStep = null;
+        } else if (input === "2") {
+          addMessage("What is the special circumstance? (emergency, not suitable for travel, be hospitalized, fracture, pregnancy, mental health, death)");
+          currentStep = "askScenario";
+        } else if (input === "3") {
+          addMessage("Please specify the circumstance (emergency, not suitable for travel, be hospitalized, fracture, pregnancy, mental health, death).");
+          currentStep = "askScenario";
+        } else {
+          addMessage("❓ Not recognized. Please type 'cancel' to restart.");
+        }
+        return;
+      }
+
+      if (currentStep === "askScenario") {
+        if (medicalProofs[input] === null && input === "mental health") {
+          addMessage("⚠️ For Mental Health cases, please escalate the case directly.");
+          currentStep = null;
+        } else if (medicalProofs[input] === null && input === "death") {
+          addMessage("⚰ No proof needed. Please remark 'canceled due to death' and indicate relationship.");
+          currentStep = null;
+        } else if (medicalProofs[input]) {
+          currentScenario = input;
+          addMessage(`What proof was provided for ${input}?`);
+          currentStep = "askProof";
+        } else {
+          addMessage("❓ Not recognized. Please check Service Guarantee links:\nFlight-Hotel: http://knowledgehub.basebiz.ctripcorp.com/...3942&locale=en-US\nSpecial Circumstances: http://knowledgehub.basebiz.ctripcorp.com/...3977&locale=en-US");
+          currentStep = null;
+        }
+        return;
+      }
+
+      if (currentStep === "askProof") {
+        if (currentScenario) {
+          const requiredProofs = medicalProofs[currentScenario];
+          const providedProof = input.toLowerCase();
+          const missingProofs = requiredProofs.filter(p => !providedProof.includes(p.toLowerCase()));
+
+          if (missingProofs.length > 0) {
+            addMessage(`📌 Missing proofs: ${missingProofs.join(", ")}\nPlease ask the guest for the insufficient proofs and use the script provided by KA.`);
+          } else {
+            addMessage("✔ All required proofs provided. Proceed with service guarantee flow.");
+          }
+        }
         currentStep = null;
-      } else {
-        addMessage(`What proofs were provided for ${scenario}? (Enter them in one line, separated by commas)`);
-        currentStep = "checkProof";
+        currentScenario = null;
+        return;
       }
+
+      // Fallback
+      addMessage("🤔 I’m not sure about that. Please check Service Guarantee links:\nFlight-Hotel: http://knowledgehub.basebiz.ctripcorp.com/...3942&locale=en-US\nSpecial Circumstances: http://knowledgehub.basebiz.ctripcorp.com/...3977&locale=en-US");
     }
 
-    function checkProofs(input) {
-      const provided = input.split(",").map(p => p.trim().toLowerCase());
-      const required = specialCircumstancesProofs[currentScenario].map(p => p.toLowerCase());
-
-      const missing = required.filter(req => !provided.includes(req));
-
-      if (missing.length === 0) {
-        addMessage("✔ All required proofs are provided. Proceed with service guarantee flow.");
-      } else {
-        addMessage("📌 Missing proofs detected:");
-        missing.forEach(m => addMessage(" - " + m));
-        addMessage("📌 Please ask the guest for the missing/insufficient proofs and use the KA/QC script.");
-      }
-      currentStep = null;
-    }
-
-    userInput.addEventListener("keydown", e => {
-      if (e.key === "Enter") {
-        sendMessage();
-      }
-    });
-
-    // Greeting
-    window.onload = () => {
-      addMessage("👋 Hi! I’m your Service Guarantee Assistant. Type <b>cancel</b> to start a workflow.");
-      userInput.focus();
-    };
+    // Initial greeting
+    addMessage("👋 Welcome! Type 'cancel' to begin a Service Guarantee workflow.");
   </script>
 </body>
 </html>

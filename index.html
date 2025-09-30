@@ -68,6 +68,7 @@
     line-height: 1.6;
     word-break: break-word;
     font-family: Dengxian, Arial, sans-serif;
+    white-space: pre-wrap;
   }
 
   .bot {
@@ -100,6 +101,36 @@
     white-space: pre-wrap;
   }
 
+  .loading {
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #007bff;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 10px 0;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg);}
+    100% { transform: rotate(360deg);}
+  }
+
+  .form-input {
+    display: flex;
+    flex-direction: column;
+    margin: 10px 0;
+  }
+
+  .form-input label {
+    margin: 5px 0 2px 0;
+  }
+
+  .form-input input {
+    padding: 5px;
+    font-family: Dengxian, Arial, sans-serif;
+  }
+
 </style>
 </head>
 <body>
@@ -110,8 +141,8 @@
     <ul>
       <li>Judge Flight-Hotel Guarantee eligibility</li>
       <li>Guide Special Circumstance cancellation workflow</li>
-      <li>Remind agents about missing or insufficient proofs</li>
-      <li>Insert QA-approved scripts for communication</li>
+      <li>Remind agents about missing proofs</li>
+      <li>Provide QA-approved script templates</li>
       <li>Provide Knowledge Hub links</li>
     </ul>
   </div>
@@ -132,118 +163,193 @@ const userInput = document.getElementById("user-input");
 
 let currentStep = null;
 let currentScenario = null;
+let providedProofs = [];
 
-// Flight-Hotel Guarantee logic: Check if hotel check-in is affected
-function isFhEligible(flightArrival, hotelCheckIn) {
-  return flightArrival >= hotelCheckIn;
+// Flight-Hotel Guarantee eligibility
+function isFhEligible(flightArrival, hotelCheckIn){
+  return flightArrival <= hotelCheckIn;
 }
 
-const medicalProofs = {
-  emergency: ["Official Diagnostics","Medical Leave Certificate","Proof of Medical Charge"],
-  "not suitable for travel": ["Official Diagnostics","Medical Leave Certificate","Proof of Medical Charge"],
-  "be hospitalized": ["Official Diagnostics","Hospitalization Certificate","Proof of Medical Charge"],
-  fracture: ["Official Diagnostics","Medical Leave Certificate","Proof of Medical Charge"],
-  pregnancy: ["Official Diagnostics","Medical Leave Certificate","Proof of Medical Charge"],
-  "mental health": null,
-  death: null
-};
-
+// Scripts (Special Circumstance)
 const scripts = {
-  1: `Greetings from Trip.com!\n\nI'm so sorry to hear that you/your xxx is not able to travel due to xx(covid,surgery...), we understand that this is something that out of your control, and we'd definitely love to help you to reduce your loss as much as possible.\n\nUnfortunately, as we negotiated with our hotel partner Ms/Mr xx, we're unable to secure an agreement of the free cancellation with hotel.\n\nNow we'd like to seek another option which would be helpful for the free cancellatin process. We sincerely appreciate if you could provide us with the following medical documentations:\n\n1. Official Diagnostics  （Well Received）\n2. Medical Leave Certificate （Need to be collected before deadline）\n3. Proof of Medical Charge（Need to be collected before deadline）(According to the actual situation）\n\nWe understand it may take time to get these proof from the hospital/clinic, please kindly provide us before the ddl xxx\n\nThus we can review all the documents to check if it's possible to help you to save your loss of this reservation.\n\nWe understand that due to health coverage, medical insurance of some countries,you may not have those ,please kindly feel free to let us know. We'll still try our best to assist you.\n\nThank you so much for your support !`,
-  2: `Dear [Guest's Name],\n\nWe hope this message finds you well. We were truly saddened to learn about your medical situation, and we want to extend our heartfelt sympathy and support during this challenging time.\n\nRegarding your booking, we have made every effort to liaise with the hotel and have communicated your circumstances to them. \n\nUnfortunately, due to the original non-refundable and non-changeable policy, the hotel staff, [Staff Member's Name], was unable to authorize a free modification or cancellation. We sincerely apologize for any inconvenience this may cause, as we are bound by the hotel's policies and cannot make changes without their consent.\n\nHowever, there is still a possibility for us to assist you with a free cancellation request. We recommend obtaining assistance from the hospital to provide the necessary documentation, which includes:\n\n1.Official Diagnostic Report (already received)\n2.Medical Leave Certificate (already received)\n3.Proof of Payment to the Hospital (still needed, you may provide it by ××× .*please inform us if it was covered by insurance)\n\nOnce you have these documents, please forward them to us, and we will promptly consult with our relevant team to pursue the cancellation request on your behalf.\n\nWe apologize once again for any inconvenience and appreciate your understanding. Please take care of yourself, and do not hesitate to reach out if you have any further questions or need additional assistance.`,
-  3: `I am very sorry to inform you that I have tried my best to coordinate with the supplier and explained your situation to hotel staff, but they couldn't agree to modify or cancel this booking for free because the original policy of the booking is non-refundable and non-changeable.\n\nAs the hotel policy is strict, if without their permission, I am afraid that I couldn't directly modify or cancel it for you. Please accept our sincere apologies, we know this may not be the preferred outcome, however, it is out of our control, and we are obligated to abide by the hotel-imposed penalties.\n\nWe understand that you need to cancel the booking due to health issues, please know that we are concerned about your well-being and wish you a speedy recovery. Trip.com is willing to assist you. Please provide the following supporting documents for our team to review before XXX（Deadline）:\n\n1. Official Diagnostics  （Not Received）\n2. Medical Leave Certificate （Not Received）\n3. Proof of Medical Charge（Not Received）\n（Please remove "Not" if the ecidence is received）\n\nIf you encounter difficulties in providing Proof of Medical Charge due to health coverage, medical insurance, or other reasons, we would appreciate it if you could kindly inform us of any special circumstances.\n\nThank you for your understanding and cooperation. If you have any questions, please feel free to contact us.`,
-  4: `Dear [Guest's Name],\n\nI am very sorry to inform you that I have tried my best to coordinate with the supplier and explained your situation to the  hotel staff. Still, they couldn't agree to modify or cancel this booking for free because the original policy of the booking is non-refundable and non-changeable. \n\nWe are really sorry to hear about what happened ( state what specifically happened ). I hope she/he recovers quickly. I see that you’ve already shared a medical certificate and proof of charges. Thank you for providing those. However, we might ask for additional documents to support your cancellation request. \n\n• Doctor’s note confirming that your wife/husband/child/parents etc, is unfit to travel. \n\n• Proof of relationship (such as a marriage certificate/birth certificate) to confirm your relationship to the traveler\n\nThese documents are necessary for us to validate the request and ensure we can further assist you.`
+  1: `Greetings from Trip.com!
+
+I'm so sorry to hear that you/your xxx is not able to travel due to xx(covid,surgery...), we understand that this is something that out of your control, and we'd definitely love to help you to reduce your loss as much as possible.
+
+Unfortunately, as we negotiated with our hotel partner Ms/Mr xx, we're unable to secure an agreement of the free cancellation with hotel.
+
+Now we'd like to seek another option which would be helpful for the free cancellation process. We sincerely appreciate if you could provide us with the following medical documentations:
+
+1. Official Diagnostics  （Well Received）
+2. Medical Leave Certificate （Need to be collected before deadline）
+3. Proof of Medical Charge（Need to be collected before deadline）(According to the actual situation）
+
+We understand it may take time to get these proof from the hospital/clinic, please kindly provide us before the ddl xxx
+
+Thus we can review all the documents to check if it's possible to help you to save your loss of this reservation.
+
+We understand that due to health coverage, medical insurance of some countries,you may not have those ,please kindly feel free to let us know. We'll still try our best to assist you.
+
+Thank you so much for your support !`,
+  2: `Dear [Guest's Name],
+
+We hope this message finds you well. We were truly saddened to learn about your medical situation, and we want to extend our heartfelt sympathy and support during this challenging time.
+
+Regarding your booking, we have made every effort to liaise with the hotel and have communicated your circumstances to them. 
+
+Unfortunately, due to the original non-refundable and non-changeable policy, the hotel staff, [Staff Member's Name], was unable to authorize a free modification or cancellation. We sincerely apologize for any inconvenience this may cause, as we are bound by the hotel's policies and cannot make changes without their consent.
+
+However, there is still a possibility for us to assist you with a free cancellation request. We recommend obtaining assistance from the hospital to provide the necessary documentation, which includes:
+
+1.Official Diagnostic Report (already received)
+2.Medical Leave Certificate (already received)
+3.Proof of Payment to the Hospital (still needed, you may provide it by ××× .*please inform us if it was covered by insurance)
+
+Once you have these documents, please forward them to us, and we will promptly consult with our relevant team to pursue the cancellation request on your behalf.
+
+We apologize once again for any inconvenience and appreciate your understanding. Please take care of yourself, and do not hesitate to reach out if you have any further questions or need additional assistance.`,
+  3: `I am very sorry to inform you that I have tried my best to coordinate with the supplier and explained your situation to hotel staff, but they couldn't agree to modify or cancel this booking for free because the original policy of the booking is non-refundable and non-changeable.
+
+As the hotel policy is strict, if without their permission, I am afraid that I couldn't directly modify or cancel it for you. Please accept our sincere apologies, we know this may not be the preferred outcome, however, it is out of our control, and we are obligated to abide by the hotel-imposed penalties.
+
+We understand that you need to cancel the booking due to health issues, please know that we are concerned about your well-being and wish you a speedy recovery. Trip.com is willing to assist you. Please provide the following supporting documents for our team to review before XXX（Deadline）:
+
+1. Official Diagnostics  （Not Received）
+2. Medical Leave Certificate （Not Received）
+3. Proof of Medical Charge（Not Received）
+（Please remove "Not" if the evidence is received）
+
+If you encounter difficulties in providing Proof of Medical Charge due to health coverage, medical insurance, or other reasons, we would appreciate it if you could kindly inform us of any special circumstances.
+
+Thank you for your understanding and cooperation. If you have any questions, please feel free to contact us.`,
+  4: `Dear [Guest's Name],
+
+I am very sorry to inform you that I have tried my best to coordinate with the supplier and explained your situation to  hotel staff. Still, they couldn't agree to modify or cancel this booking for free because the original policy of the booking is non-refundable and non-changeable. 
+
+We are really sorry to hear about what happened (state what specifically happened). I hope she/he recovers quickly. I see that you’ve already shared a medical certificate and proof of charges. Thank you for providing those. However, we might ask for additional documents to support your cancellation request. 
+
+• Doctor’s note confirming that your wife/husband/child/parents etc, is unfit to travel. 
+
+• Proof of relationship (such as a marriage certificate/birth certificate) to confirm your relationship to the traveler
+
+These documents are necessary for us to validate the request and ensure we can further assist you.`
 };
 
-function addMessage(text, sender="bot", typing=false){
-  if(typing){
-    const bubble = document.createElement("div");
-    bubble.className = `bubble ${sender}`;
-    chatBox.appendChild(bubble);
-    let i = 0;
-    const interval = setInterval(()=>{
-      bubble.textContent += text.charAt(i);
-      i++;
-      if(i>=text.length) clearInterval(interval);
-      chatBox.scrollTop = chatBox.scrollHeight;
-    },10);
-  } else {
-    const bubble = document.createElement("div");
-    bubble.className = `bubble ${sender}`;
-    bubble.textContent = text;
-    chatBox.appendChild(bubble);
+function addMessage(text,sender="bot",loading=false){
+  if(loading){
+    const load = document.createElement("div");
+    load.className="loading";
+    chatBox.appendChild(load);
     chatBox.scrollTop = chatBox.scrollHeight;
+    setTimeout(()=>{
+      chatBox.removeChild(load);
+      addMessage(text,sender);
+    },500);
+    return;
   }
-}
-
-function sendMessage(){
-  const text = userInput.value.trim();
-  if(!text) return;
-  addMessage(text, "user");
-  userInput.value = "";
-  processMessage(text);
-}
-
-function showButtons(options){
   const bubble = document.createElement("div");
-  bubble.className = "bubble bot";
+  bubble.className=`bubble ${sender}`;
+  bubble.textContent=text;
+  chatBox.appendChild(bubble);
+  chatBox.scrollTop = chatBox.scrollHeight;
+}
+
+function showButtons(options,callback){
+  const bubble = document.createElement("div");
+  bubble.className="bubble bot";
   options.forEach((opt,i)=>{
     const btn = document.createElement("div");
-    btn.className = "button-bubble";
-    btn.textContent = opt;
-    btn.onclick = ()=>{addMessage(opt,"user"); handleOption(i+1);}
+    btn.className="button-bubble";
+    btn.textContent=opt;
+    btn.onclick = ()=>{addMessage(opt,"user"); callback(i+1);}
     bubble.appendChild(btn);
   });
   chatBox.appendChild(bubble);
   chatBox.scrollTop = chatBox.scrollHeight;
 }
 
-function insertScript(num){
-  if(scripts[num]){
-    addMessage(`Script selected →\n\n${scripts[num]}`,"bot",true);
-  }
-}
-
-// Example handler
 function handleOption(opt){
   if(currentStep==="selectScenario"){
-    currentScenario = opt;
-    if(opt===1) addMessage("Flight-Hotel Guarantee selected. Please enter flight arrival date and hotel check-in date in format YYYY-MM-DD to YYYY-MM-DD","bot");
-    if(opt===2) addMessage("Special Circumstance selected. Choose: 1️⃣ Guest is patient, 2️⃣ Guest is relative","bot",true);
-    currentStep = "processScenario";
+    currentScenario=opt;
+    if(opt===1){
+      currentStep="fhDates";
+      addMessage("Flight-Hotel Guarantee selected. Please fill out the dates:");
+      addFhForm();
+    } else if(opt===2){
+      currentStep="specialProofs";
+      providedProofs=[];
+      addMessage("Special Circumstance selected. Please enter proofs currently provided (comma separated):");
+    }
   } else if(currentStep==="scriptSelection"){
     insertScript(opt);
   }
 }
 
-function processMessage(msg){
-  msg = msg.toLowerCase();
-  if(msg==="cancel"){
-    currentStep="selectScenario";
-    addMessage("👋 Welcome! Type 'Cancel' to begin a Service Guarantee workflow.","bot");
-    showButtons(["Flight-Hotel Guarantee","Special Circumstance"]);
-    return;
-  }
-
-  if(currentStep==="processScenario"){
-    if(currentScenario===1){
-      const parts = msg.split("to").map(d=>new Date(d.trim()));
-      if(parts.length===2){
-        const eligible = isFhEligible(parts[0],parts[1]);
-        addMessage(eligible?"Flight-Hotel Guarantee eligible based on dates":"Flight-Hotel Guarantee not applicable (hotel check-in not affected)","bot");
-        currentStep="scriptSelection";
-        showButtons(["Script 1","Script 2","Script 3","Script 4"]);
-      }
-    } else if(currentScenario===2){
-      addMessage("Processing Special Circumstance... Check provided proofs and suggest next action.","bot",true);
-      currentStep="scriptSelection";
-      showButtons(["Script 1","Script 2","Script 3","Script 4"]);
-    }
+function insertScript(num){
+  if(scripts[num]){
+    const block = document.createElement("div");
+    block.className="script-block";
+    block.textContent=`Script selected →\n\n${scripts[num]}`;
+    chatBox.appendChild(block);
+    chatBox.scrollTop = chatBox.scrollHeight;
   }
 }
 
-addMessage("👋 Welcome! Type 'Cancel' to begin a Service Guarantee workflow.","bot");
+function addFhForm(){
+  const formDiv = document.createElement("div");
+  formDiv.className="form-input";
+  formDiv.innerHTML=`
+    <label>Affected flight dates:</label>
+    <input id="fh-flight" type="date" />
+    <label>Hotel check-in date:</label>
+    <input id="fh-checkin" type="date" />
+    <button id="fh-submit">Submit</button>
+  `;
+  chatBox.appendChild(formDiv);
+  chatBox.scrollTop = chatBox.scrollHeight;
+  document.getElementById("fh-submit").onclick=()=>{
+    const flightDate = new Date(document.getElementById("fh-flight").value);
+    const hotelDate = new Date(document.getElementById("fh-checkin").value);
+    const eligible = isFhEligible(flightDate,hotelDate);
+    addMessage(eligible ? "Flight-Hotel Guarantee eligible based on dates" : "Flight-Hotel Guarantee not applicable (hotel check-in not affected)");
+    currentStep="completed";
+  };
+}
 
+function processMessage(msg){
+  if(msg.toLowerCase()==="cancel"){
+    currentStep="selectScenario";
+    addMessage("👋 Welcome! Type 'Cancel' to begin a Service Guarantee workflow.", "bot", true);
+    showButtons(["Flight-Hotel Guarantee","Special Circumstance"],handleOption);
+    return;
+  }
+
+  if(currentStep==="specialProofs"){
+    providedProofs = msg.split(",").map(s=>s.trim().toLowerCase());
+    const allProofs = ["official diagnostics","medical leave certificate","proof of medical charge","proof of relationship"];
+    const missing = allProofs.filter(p=>!providedProofs.includes(p));
+    addMessage(missing.length>0 ? `Missing proofs: ${missing.join(", ")}` : "All necessary proofs provided.");
+    currentStep="scriptSelection";
+    addMessage("Select which script to send:", "bot", true);
+    showButtons(["Script 1","Script 2","Script 3","Script 4"], handleOption);
+  }
+}
+
+// Handle Enter key
+userInput.addEventListener("keydown",function(e){
+  if(e.key==="Enter") sendMessage();
+});
+
+function sendMessage(){
+  const text = userInput.value.trim();
+  if(!text) return;
+  addMessage(text,"user");
+  userInput.value="";
+  processMessage(text);
+}
+
+// Start
+addMessage("👋 Welcome! Type 'Cancel' to begin a Service Guarantee workflow.", "bot");
 </script>
 </body>
 </html>

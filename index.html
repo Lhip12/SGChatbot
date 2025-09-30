@@ -1,294 +1,382 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <title>Service Guarantee Chatbot</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      display: flex;
-      height: 100vh;
-      background: #f5f7fa;
-    }
-    .instructions {
-      flex: 1;
-      padding: 20px;
-      background: #fff;
-      overflow-y: auto;
-    }
-    .chat-container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background: #e9eff5;
-      border-left: 2px solid #ccc;
-    }
-    .chat-box {
-      flex: 1;
-      padding: 20px;
-      overflow-y: auto;
-    }
-    .chat-input {
-      display: flex;
-      padding: 10px;
-      background: #fff;
-      border-top: 1px solid #ccc;
-    }
-    .chat-input input {
-      flex: 1;
-      padding: 10px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-    .chat-input button {
-      margin-left: 10px;
-      padding: 10px 20px;
-      border: none;
-      background: #007bff;
-      color: #fff;
-      border-radius: 5px;
-      cursor: pointer;
-    }
-    .bubble {
-      max-width: 70%;
-      padding: 10px;
-      margin: 5px 0;
-      border-radius: 15px;
-      line-height: 1.4;
-    }
-    .bot {
-      background: #007bff;
-      color: white;
-      align-self: flex-start;
-    }
-    .user {
-      background: #ddd;
-      align-self: flex-end;
-    }
-  </style>
+<meta charset="UTF-8" />
+<title>Service Guarantee Chatbot</title>
+<style>
+  /* ===== UI Layout ===== */
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    display: flex;
+    height: 100vh;
+    background: #f5f7fa;
+  }
+  /* Chat panel (left) */
+  .chat-container {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #e9eff5;
+    border-right: 2px solid #ccc;
+  }
+  .chat-box {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+  }
+  .chat-input {
+    display: flex;
+    padding: 10px;
+    background: #fff;
+    border-top: 1px solid #ccc;
+  }
+  .chat-input input {
+    flex: 1;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+  }
+  .chat-input button {
+    margin-left: 10px;
+    padding: 10px 20px;
+    border: none;
+    background: #007bff;
+    color: #fff;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  .bubble {
+    max-width: 70%;
+    padding: 10px;
+    margin: 5px 0;
+    border-radius: 15px;
+    line-height: 1.4;
+  }
+  .bot {
+    background: #007bff;
+    color: white;
+    align-self: flex-start;
+  }
+  .user {
+    background: #ddd;
+    align-self: flex-end;
+  }
+  .script-block {
+    background: #ffeaa7;
+    border-left: 4px solid #fdcb6e;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    font-size: 0.95em;
+    white-space: pre-wrap;
+  }
+
+  /* Right panel for instructions, KH links, scripts, auto-judge */
+  .instructions {
+    flex: 0.6;
+    padding: 20px;
+    background: #fff;
+    overflow-y: auto;
+  }
+  .instructions h2 { margin-top: 0; }
+  .scripts-section button {
+    margin-top: 5px;
+    padding: 5px 10px;
+    cursor: pointer;
+  }
+  .script-content {
+    display: none;
+    margin-top: 5px;
+    background: #f1f2f6;
+    padding: 10px;
+    border-radius: 5px;
+    font-size: 0.95em;
+    white-space: pre-wrap;
+  }
+  .auto-judge {
+    margin-top: 20px;
+    padding: 10px;
+    background: #dfe6e9;
+    border-radius: 5px;
+    font-size: 0.95em;
+    white-space: pre-wrap;
+  }
+</style>
 </head>
 <body>
-  <div class="instructions">
-    <h2>Welcome to Service Guarantee Chatbot</h2>
-    <p>This chatbot helps test Service Guarantee scenarios. Please note:</p>
-    <ol>
-      <li>It can only handle simple tasks.</li>
-      <li>It cannot read proof documents yet.</li>
-      <li>It validates if Flight booking dates affect hotel check-in under F-H Guarantee rules.</li>
-      <li>It guides you on missing/insufficient proofs and reminds you to use KA/QC scripts.</li>
-      <li>This is a beta version for testing. Please provide feedback for improvements.</li>
-    </ol>
-  </div>
 
-  <div class="chat-container">
-    <div id="chat-box" class="chat-box"></div>
-    <div class="chat-input">
-      <input id="user-input" type="text" placeholder="Type your message..." />
-      <button onclick="sendMessage()">Send</button>
+<!-- ===== Right Panel: Instructions / Scripts / Auto-Judge ===== -->
+<div class="instructions">
+  <h2>Service Guarantee Chatbot Assistant</h2>
+  <p>Guidance & Tools:</p>
+  <ul>
+    <li>Type <strong>Cancel</strong> to start a Service Guarantee workflow.</li>
+    <li>Case-sensitive input: first letter capitalized.</li>
+    <li>Multiple proofs: comma-separated, no spaces.</li>
+    <li>Unrecognized keyword → KH link provided.</li>
+  </ul>
+  <p><strong>Knowledge Hub Links:</strong></p>
+  <ul>
+    <li><a href="http://knowledgehub.basebiz.ctripcorp.com/webapp/sp/servicebible/knowledgesync/selectNew?currentBusinessTypeId=26&businessId=6938&subjectId=67740&sceneId=2523886%2C2523914%2C2523942&locale=en-US" target="_blank">Flight-Hotel Cancellation Guarantee</a></li>
+    <li><a href="http://knowledgehub.basebiz.ctripcorp.com/webapp/sp/servicebible/knowledgesync/selectNew?currentBusinessTypeId=26&businessId=6938&subjectId=67740&sceneId=2523886%2C2523914%2C2523977&locale=en-US" target="_blank">Special Circumstance Cancellation Guarantee</a></li>
+  </ul>
+
+  <!-- ===== Script Templates ===== -->
+  <div class="scripts-section">
+    <h3>Script Templates</h3>
+
+    <button onclick="toggleScript(1)">Script 1: Initial Proof Request</button>
+    <div id="script1" class="script-content">
+Greetings from Trip.com!
+
+I'm so sorry to hear that you/your xxx is not able to travel due to xx (covid, surgery...), we understand this is out of your control. We'd love to help reduce your loss.
+
+Please provide the following documents:
+1. Official Diagnostics (Well Received)
+2. Medical Leave Certificate (Need before deadline)
+3. Proof of Medical Charge (Need before deadline)
+
+If some proofs are unavailable due to insurance/coverage, let us know; we will still assist you.
     </div>
+    <button onclick="insertScript(1)">Insert Script 1</button>
+
+    <button onclick="toggleScript(2)">Script 2: Follow-up Proof Request</button>
+    <div id="script2" class="script-content">
+Dear [Guest Name],
+
+We tried liaising with the hotel but could not secure free cancellation. Please provide:
+1. Official Diagnostic Report (already received)
+2. Medical Leave Certificate (already received)
+3. Proof of Payment to Hospital (still needed)
+Once received, we will consult the team to pursue cancellation.
+    </div>
+    <button onclick="insertScript(2)">Insert Script 2</button>
+
+    <button onclick="toggleScript(3)">Script 3: Hotel Policy Strict</button>
+    <div id="script3" class="script-content">
+I am sorry to inform you the hotel could not authorize free modification/cancellation due to strict non-refundable policy.
+
+Please provide before XXX (Deadline):
+1. Official Diagnostics
+2. Medical Leave Certificate
+3. Proof of Medical Charge
+
+If unable to provide proof due to insurance, inform us for special handling.
+    </div>
+    <button onclick="insertScript(3)">Insert Script 3</button>
+
+    <button onclick="toggleScript(4)">Script 4: Guest not Patient / Relationship Proof</button>
+    <div id="script4" class="script-content">
+Dear [Guest Name],
+
+Hotel could not authorize free cancellation. Thank you for already providing medical certificate and proof of charges. Please also provide:
+
+• Doctor’s note confirming patient unfit to travel  
+• Proof of relationship (marriage/birth certificate)
+    </div>
+    <button onclick="insertScript(4)">Insert Script 4</button>
   </div>
 
-  <script>
-    // =========================
-    // MODULE 1: State Variables
-    // =========================
-    const chatBox = document.getElementById("chat-box");
-    const userInput = document.getElementById("user-input");
+  <!-- ===== Auto-Judge Panel ===== -->
+  <div class="auto-judge" id="auto-judge">
+    <strong>Auto-Judge Panel</strong>
+    <p>Checklist will appear here after conversation ends.</p>
+  </div>
+</div>
 
-    let currentStep = null;
-    let currentScenario = null;
+<!-- ===== Left Panel: Chat ===== -->
+<div class="chat-container">
+  <div id="chat-box" class="chat-box"></div>
+  <div class="chat-input">
+    <input id="user-input" type="text" placeholder="Type your message..." />
+    <button onclick="sendMessage()">Send</button>
+  </div>
+</div>
 
-    // =========================
-    // MODULE 2: Proof Database
-    // =========================
-    // Define required proofs for each medical scenario
-    const medicalProofs = {
-      emergency: ["medical record or diagnosis report", "sick-leave certificate", "proof of medical charge"],
-      "not suitable for travel": ["medical record or diagnosis report", "sick-leave certificate", "proof of medical charge"],
-      "be hospitalized": ["medical record or diagnosis report", "hospitalization certificate", "proof of medical charge"],
-      fracture: ["medical record or diagnosis report", "sick-leave certificate", "proof of medical charge"],
-      pregnancy: ["medical record or diagnosis report", "sick-leave certificate", "proof of medical charge"],
-      "mental health": null,
-      death: null
-    };
+<script>
+/* ===== Helper Functions ===== */
+const chatBox = document.getElementById("chat-box");
+const userInput = document.getElementById("user-input");
+const autoJudgePanel = document.getElementById("auto-judge");
 
-    // =========================
-    // MODULE 3: Helper Functions
-    // =========================
-    // Add a new message bubble
-    function addMessage(text, sender = "bot") {
-      const bubble = document.createElement("div");
-      bubble.className = `bubble ${sender}`;
-      bubble.innerText = text;
-      chatBox.appendChild(bubble);
+let currentStep = null;
+let currentScenario = null;
+let conversationData = { proofsProvided: [], specialReminder: "" };
+
+const medicalProofs = {
+  "Emergency": ["Official Diagnostics","Medical Leave Certificate","Proof of Medical Charge"],
+  "Not suitable for travel": ["Official Diagnostics","Medical Leave Certificate","Proof of Medical Charge"],
+  "Be hospitalized": ["Official Diagnostics","Hospitalization Certificate","Proof of Medical Charge"],
+  "Fracture": ["Official Diagnostics","Medical Leave Certificate","Proof of Medical Charge"],
+  "Pregnancy": ["Official Diagnostics","Medical Leave Certificate","Proof of Medical Charge"],
+  "Mental health": ["Medical Record or Diagnosis Report"],
+  "Death": []
+};
+
+// Typing Animation
+function addMessage(text, sender="bot") {
+  if(sender==="bot"){
+    let i=0;
+    const bubble = document.createElement("div");
+    bubble.className=`bubble ${sender}`;
+    chatBox.appendChild(bubble);
+    const typing = setInterval(()=>{
+      bubble.innerText += text.charAt(i);
+      i++;
       chatBox.scrollTop = chatBox.scrollHeight;
+      if(i>=text.length) clearInterval(typing);
+    },10);
+  } else {
+    const bubble = document.createElement("div");
+    bubble.className=`bubble ${sender}`;
+    bubble.innerText=text;
+    chatBox.appendChild(bubble);
+    chatBox.scrollTop=chatBox.scrollHeight;
+  }
+}
+
+// ===== Script Toggle & Insert =====
+function toggleScript(num){
+  const sc=document.getElementById("script"+num);
+  sc.style.display = sc.style.display==="block"?"none":"block";
+}
+function insertScript(num){
+  const sc=document.getElementById("script"+num).innerText;
+  addMessage("Script selected →\n"+sc,"user");
+}
+
+// ===== Send Message =====
+function sendMessage(){
+  const text=userInput.value.trim();
+  if(!text) return;
+  addMessage(text,"user");
+  userInput.value="";
+  handleInput(text);
+}
+
+userInput.addEventListener("keypress", e=>{
+  if(e.key==="Enter") sendMessage();
+});
+
+/* ===== Conversation Flow ===== */
+function handleInput(input){
+  if(input.toLowerCase()==="cancel"){
+    addMessage("Please select an option:\n1️⃣ Flight-Hotel Guarantee\n2️⃣ Special Circumstance");
+    currentStep="mainMenu";
+    return;
+  }
+
+  if(currentStep==="mainMenu"){
+    if(input==="1"){
+      addMessage("Please enter your flight date and hotel check-in date in this format:\nYYYY-MM-DD to YYYY-MM-DD");
+      currentStep="flightDates";
+    } else if(input==="2"){
+      addMessage("Select reason:\n1️⃣ Hotel rejected\n2️⃣ Insufficient Proof\n3️⃣ Special Circumstances");
+      currentStep="specialMenu";
+    } else {
+      addMessage("❓ Not recognized. Type 'Cancel' to restart.");
     }
+    return;
+  }
 
-    // Send user input
-    function sendMessage() {
-      const text = userInput.value.trim();
-      if (!text) return;
-      addMessage(text, "user");
-      userInput.value = "";
-      handleInput(text.toLowerCase());
+  if(currentStep==="flightDates"){
+    const datePattern=/^(\d{4}-\d{2}-\d{2})\s+to\s+(\d{4}-\d{2}-\d{2})$/;
+    const match=input.match(datePattern);
+    if(match){
+      const flightDate=new Date(match[1]);
+      const hotelDate=new Date(match[2]);
+      if(flightDate>hotelDate){
+        addMessage("⚠️ Flight arrival after hotel check-in. Possible F-H Guarantee case.");
+        addMessage("✈️ Was this due to involuntary airline change? (yes/no)");
+        currentStep="involuntaryChange";
+      } else {
+        addMessage("✔ Flight date does not conflict. Not covered by F-H Guarantee.");
+        currentStep=null;
+      }
+    } else {
+      addMessage("⚠️ Enter dates as: YYYY-MM-DD to YYYY-MM-DD");
     }
-    userInput.addEventListener("keypress", function (e) {
-      if (e.key === "Enter") sendMessage();
-    });
+    return;
+  }
 
-    // =========================
-    // MODULE 4: Automation Features
-    // =========================
-
-    // 🔹 Fuzzy proof checker (improvement)
-    function checkProofs(provided, required) {
-      // Normalize input: split by comma and lowercase
-      const providedProofs = provided.split(",").map(p => p.trim().toLowerCase());
-      // Check missing proofs
-      const missing = required.filter(req =>
-        !providedProofs.some(prov => prov.includes(req.toLowerCase()))
-      );
-      return missing;
+  if(currentStep==="involuntaryChange"){
+    if(input.toLowerCase()==="yes"){
+      addMessage("👤 Is the affected passenger also the hotel guest? (yes/no)");
+      currentStep="passengerMatch";
+    } else {
+      addMessage("❌ Not covered: Guarantee only applies for involuntary airline changes.");
+      currentStep=null;
     }
+    return;
+  }
 
-    // 🔹 Complaint Ticket Pre-fill
-    function generateComplaintTicket(reason) {
-      return `📄 Complaint Ticket Template\n\n` +
-             `Category: Difficulties with Cancellation\n` +
-             `Subtype: Service Guarantee\n` +
-             `Reason: ${reason}\n` +
-             `Required Proof: Hotel charge receipt\n` +
-             `Remarks: Merchant refused refund despite F-H Guarantee eligibility.`;
+  if(currentStep==="passengerMatch"){
+    if(input.toLowerCase()==="yes"){
+      addMessage("✔ All conditions met. Proceed with Flight-Hotel Guarantee flow.");
+    } else {
+      addMessage("❌ Not covered: Passenger must match hotel guest.");
     }
+    currentStep=null;
+    return;
+  }
 
-    // =========================
-    // MODULE 5: Core Conversation Logic
-    // =========================
-    function handleInput(input) {
-      if (input === "cancel") {
-        addMessage("Please select an option:\n1️⃣ Flight-Hotel Guarantee\n2️⃣ Special Circumstances\n3️⃣ Merchant Refusal");
-        currentStep = "mainMenu";
-        return;
-      }
-
-      if (currentStep === "mainMenu") {
-        if (input === "1") {
-          addMessage("Please enter your flight date and hotel check-in date in this format:\nYYYY-MM-DD to YYYY-MM-DD");
-          currentStep = "flightDates";
-        } else if (input === "2") {
-          addMessage("Select reason:\n1️⃣ Hotel rejected\n2️⃣ Insufficient Proof\n3️⃣ Special Circumstances");
-          currentStep = "specialMenu";
-        } else if (input === "3") {
-          // NEW FEATURE: Complaint pre-fill
-          addMessage(generateComplaintTicket("Merchant Refusal"));
-          currentStep = null;
-        } else {
-          addMessage("❓ Not recognized. Please type 'cancel' to restart.");
-        }
-        return;
-      }
-
-      // ========== Flight-Hotel Guarantee Flow ==========
-      if (currentStep === "flightDates") {
-        const datePattern = /^(\d{4}-\d{2}-\d{2})\s+to\s+(\d{4}-\d{2}-\d{2})$/;
-        const match = input.match(datePattern);
-
-        if (match) {
-          const flightDate = new Date(match[1]);
-          const hotelDate = new Date(match[2]);
-
-          if (flightDate > hotelDate) {
-            addMessage("⚠️ Flight arrival is after hotel check-in. Possible F-H Guarantee case.");
-            addMessage("✈️ Was this due to an involuntary airline change (cancellation or delay)? (yes/no)");
-            currentStep = "involuntaryChange";
-          } else {
-            addMessage("✔ Flight date does not conflict with hotel check-in. Not covered by F-H Guarantee.");
-            currentStep = null;
-          }
-        } else {
-          addMessage("⚠️ Please enter dates in format: YYYY-MM-DD to YYYY-MM-DD");
-        }
-        return;
-      }
-
-      if (currentStep === "involuntaryChange") {
-        if (input === "yes") {
-          addMessage("👤 Is the affected passenger also the hotel guest? (yes/no)");
-          currentStep = "passengerMatch";
-        } else {
-          addMessage("❌ Not covered: Guarantee only applies for involuntary airline changes.");
-          currentStep = null;
-        }
-        return;
-      }
-
-      if (currentStep === "passengerMatch") {
-        if (input === "yes") {
-          addMessage("✔ All conditions met. Proceed with Flight-Hotel Guarantee flow.");
-        } else {
-          addMessage("❌ Not covered: Passenger must match hotel guest.");
-        }
-        currentStep = null;
-        return;
-      }
-
-      // ========== Special Circumstances Flow ==========
-      if (currentStep === "specialMenu") {
-        if (input === "1") {
-          addMessage("📌 Please send the script provided by KA/QC for Hotel Rejected cases.");
-          currentStep = null;
-        } else if (input === "2" || input === "3") {
-          addMessage("Please specify the circumstance (emergency, not suitable for travel, be hospitalized, fracture, pregnancy, mental health, death).");
-          currentStep = "askScenario";
-        } else {
-          addMessage("❓ Not recognized. Please type 'cancel' to restart.");
-        }
-        return;
-      }
-
-      if (currentStep === "askScenario") {
-        if (medicalProofs[input] === null && input === "mental health") {
-          addMessage("⚠️ For Mental Health cases, please escalate the case directly.");
-          currentStep = null;
-        } else if (medicalProofs[input] === null && input === "death") {
-          addMessage("⚰ No proof needed. Please remark 'canceled due to death' and indicate relationship.");
-          currentStep = null;
-        } else if (medicalProofs[input]) {
-          currentScenario = input;
-          addMessage(`What proof was provided for ${input}? (list with commas)`);
-          currentStep = "askProof";
-        } else {
-          addMessage("❓ Not recognized. Please check Service Guarantee links:\nFlight-Hotel: [link]\nSpecial Circumstances: [link]");
-          currentStep = null;
-        }
-        return;
-      }
-
-      if (currentStep === "askProof") {
-        if (currentScenario) {
-          const requiredProofs = medicalProofs[currentScenario];
-          const missingProofs = checkProofs(input, requiredProofs); // 🔹 uses new helper
-
-          if (missingProofs.length > 0) {
-            addMessage(`📌 Missing proofs: ${missingProofs.join(", ")}\nPlease ask the guest for the insufficient proofs and use the KA script.`);
-          } else {
-            addMessage("✔ All required proofs provided. Proceed with service guarantee flow.");
-          }
-        }
-        currentStep = null;
-        currentScenario = null;
-        return;
-      }
-
-      // ========== Fallback ==========
-      addMessage("🤔 I’m not sure about that. Please check Service Guarantee links:\nFlight-Hotel: [link]\nSpecial Circumstances: [link]");
+  if(currentStep==="specialMenu"){
+    if(input==="1"){
+      addMessage("📌 Please send the script provided by KA/QC for Hotel Rejected cases.");
+      currentStep=null;
+    } else if(input==="2" || input==="3"){
+      addMessage("Please specify the circumstance (Emergency, Not suitable for travel, Be hospitalized, Fracture, Pregnancy, Mental health, Death).");
+      currentStep="askScenario";
+    } else {
+      addMessage("❓ Not recognized. Type 'Cancel' to restart.");
     }
+    return;
+  }
 
-    // =========================
-    // MODULE 6: Startup Greeting
-    // =========================
-    addMessage("👋 Welcome! Type 'cancel' to begin a Service Guarantee workflow.");
-  </script>
+  if(currentStep==="askScenario"){
+    if(medicalProofs[input]===undefined){
+      addMessage("❓ Not recognized. Check Service Guarantee links.");
+      currentStep=null;
+    } else {
+      currentScenario=input;
+      addMessage(`What proofs were provided for ${input}? (comma-separated)`);
+      currentStep="askProof";
+    }
+    return;
+  }
+
+  if(currentStep==="askProof"){
+    const required=medicalProofs[currentScenario];
+    const provided=input.split(",").map(p=>p.trim());
+    const missing=required.filter(p=>!provided.includes(p));
+    conversationData.proofsProvided=provided;
+    if(missing.length>0){
+      conversationData.specialReminder=`Missing proofs: ${missing.join(", ")}`;
+      addMessage(`📌 Missing proofs: ${missing.join(", ")}\nPlease ask guest for insufficient proofs.`);
+    } else {
+      conversationData.specialReminder="All required proofs provided.";
+      addMessage("✔ All required proofs provided. Proceed with service guarantee flow.");
+    }
+    currentStep=null;
+    currentScenario=null;
+    showAutoJudge();
+    return;
+  }
+
+  // Fallback
+  addMessage("🤔 I’m not sure. Check Service Guarantee links.");
+}
+
+// ===== Show Auto-Judge Reminder =====
+function showAutoJudge(){
+  autoJudgePanel.innerText="Auto-Judge Panel:\n";
+  autoJudgePanel.innerText+=`✔ Proofs provided: ${conversationData.proofsProvided.join(", ")}\n`;
+  autoJudgePanel.innerText+=`⚠️ Reminder: ${conversationData.specialReminder}`;
+}
+
+// ===== Initial greeting =====
+addMessage("👋 Welcome! Type 'Cancel' to begin a Service Guarantee workflow.");
+</script>
 </body>
 </html>

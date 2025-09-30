@@ -90,12 +90,19 @@
   </div>
 
   <script>
+    // =========================
+    // MODULE 1: State Variables
+    // =========================
     const chatBox = document.getElementById("chat-box");
     const userInput = document.getElementById("user-input");
 
     let currentStep = null;
     let currentScenario = null;
 
+    // =========================
+    // MODULE 2: Proof Database
+    // =========================
+    // Define required proofs for each medical scenario
     const medicalProofs = {
       emergency: ["medical record or diagnosis report", "sick-leave certificate", "proof of medical charge"],
       "not suitable for travel": ["medical record or diagnosis report", "sick-leave certificate", "proof of medical charge"],
@@ -106,6 +113,10 @@
       death: null
     };
 
+    // =========================
+    // MODULE 3: Helper Functions
+    // =========================
+    // Add a new message bubble
     function addMessage(text, sender = "bot") {
       const bubble = document.createElement("div");
       bubble.className = `bubble ${sender}`;
@@ -114,22 +125,49 @@
       chatBox.scrollTop = chatBox.scrollHeight;
     }
 
+    // Send user input
     function sendMessage() {
       const text = userInput.value.trim();
       if (!text) return;
-
       addMessage(text, "user");
       userInput.value = "";
       handleInput(text.toLowerCase());
     }
-
     userInput.addEventListener("keypress", function (e) {
       if (e.key === "Enter") sendMessage();
     });
 
+    // =========================
+    // MODULE 4: Automation Features
+    // =========================
+
+    // 🔹 Fuzzy proof checker (improvement)
+    function checkProofs(provided, required) {
+      // Normalize input: split by comma and lowercase
+      const providedProofs = provided.split(",").map(p => p.trim().toLowerCase());
+      // Check missing proofs
+      const missing = required.filter(req =>
+        !providedProofs.some(prov => prov.includes(req.toLowerCase()))
+      );
+      return missing;
+    }
+
+    // 🔹 Complaint Ticket Pre-fill
+    function generateComplaintTicket(reason) {
+      return `📄 Complaint Ticket Template\n\n` +
+             `Category: Difficulties with Cancellation\n` +
+             `Subtype: Service Guarantee\n` +
+             `Reason: ${reason}\n` +
+             `Required Proof: Hotel charge receipt\n` +
+             `Remarks: Merchant refused refund despite F-H Guarantee eligibility.`;
+    }
+
+    // =========================
+    // MODULE 5: Core Conversation Logic
+    // =========================
     function handleInput(input) {
       if (input === "cancel") {
-        addMessage("Please select an option:\n1️⃣ Flight-Hotel Guarantee\n2️⃣ Special Circumstances");
+        addMessage("Please select an option:\n1️⃣ Flight-Hotel Guarantee\n2️⃣ Special Circumstances\n3️⃣ Merchant Refusal");
         currentStep = "mainMenu";
         return;
       }
@@ -141,13 +179,17 @@
         } else if (input === "2") {
           addMessage("Select reason:\n1️⃣ Hotel rejected\n2️⃣ Insufficient Proof\n3️⃣ Special Circumstances");
           currentStep = "specialMenu";
+        } else if (input === "3") {
+          // NEW FEATURE: Complaint pre-fill
+          addMessage(generateComplaintTicket("Merchant Refusal"));
+          currentStep = null;
         } else {
           addMessage("❓ Not recognized. Please type 'cancel' to restart.");
         }
         return;
       }
 
-      // Flight-Hotel Guarantee flow
+      // ========== Flight-Hotel Guarantee Flow ==========
       if (currentStep === "flightDates") {
         const datePattern = /^(\d{4}-\d{2}-\d{2})\s+to\s+(\d{4}-\d{2}-\d{2})$/;
         const match = input.match(datePattern);
@@ -191,15 +233,12 @@
         return;
       }
 
-      // Special Circumstances flow
+      // ========== Special Circumstances Flow ==========
       if (currentStep === "specialMenu") {
         if (input === "1") {
           addMessage("📌 Please send the script provided by KA/QC for Hotel Rejected cases.");
           currentStep = null;
-        } else if (input === "2") {
-          addMessage("What is the special circumstance? (emergency, not suitable for travel, be hospitalized, fracture, pregnancy, mental health, death)");
-          currentStep = "askScenario";
-        } else if (input === "3") {
+        } else if (input === "2" || input === "3") {
           addMessage("Please specify the circumstance (emergency, not suitable for travel, be hospitalized, fracture, pregnancy, mental health, death).");
           currentStep = "askScenario";
         } else {
@@ -217,10 +256,10 @@
           currentStep = null;
         } else if (medicalProofs[input]) {
           currentScenario = input;
-          addMessage(`What proof was provided for ${input}?`);
+          addMessage(`What proof was provided for ${input}? (list with commas)`);
           currentStep = "askProof";
         } else {
-          addMessage("❓ Not recognized. Please check Service Guarantee links:\nFlight-Hotel: http://knowledgehub.basebiz.ctripcorp.com/...3942&locale=en-US\nSpecial Circumstances: http://knowledgehub.basebiz.ctripcorp.com/...3977&locale=en-US");
+          addMessage("❓ Not recognized. Please check Service Guarantee links:\nFlight-Hotel: [link]\nSpecial Circumstances: [link]");
           currentStep = null;
         }
         return;
@@ -229,11 +268,10 @@
       if (currentStep === "askProof") {
         if (currentScenario) {
           const requiredProofs = medicalProofs[currentScenario];
-          const providedProof = input.toLowerCase();
-          const missingProofs = requiredProofs.filter(p => !providedProof.includes(p.toLowerCase()));
+          const missingProofs = checkProofs(input, requiredProofs); // 🔹 uses new helper
 
           if (missingProofs.length > 0) {
-            addMessage(`📌 Missing proofs: ${missingProofs.join(", ")}\nPlease ask the guest for the insufficient proofs and use the script provided by KA.`);
+            addMessage(`📌 Missing proofs: ${missingProofs.join(", ")}\nPlease ask the guest for the insufficient proofs and use the KA script.`);
           } else {
             addMessage("✔ All required proofs provided. Proceed with service guarantee flow.");
           }
@@ -243,11 +281,13 @@
         return;
       }
 
-      // Fallback
-      addMessage("🤔 I’m not sure about that. Please check Service Guarantee links:\nFlight-Hotel: http://knowledgehub.basebiz.ctripcorp.com/...3942&locale=en-US\nSpecial Circumstances: http://knowledgehub.basebiz.ctripcorp.com/...3977&locale=en-US");
+      // ========== Fallback ==========
+      addMessage("🤔 I’m not sure about that. Please check Service Guarantee links:\nFlight-Hotel: [link]\nSpecial Circumstances: [link]");
     }
 
-    // Initial greeting
+    // =========================
+    // MODULE 6: Startup Greeting
+    // =========================
     addMessage("👋 Welcome! Type 'cancel' to begin a Service Guarantee workflow.");
   </script>
 </body>

@@ -159,7 +159,7 @@
 </div>
 
 <div class="instructions">
-  <h2>Service Guarantee Instructions</h2>
+  <h2>Service Guarantee Chatbot Instructions</h2>
 
   <div class="bot-capabilities">
     <strong>Bot Capabilities:</strong>
@@ -169,6 +169,7 @@
       <li>Remind agents about missing proofs</li>
       <li>Provide QA-approved script templates</li>
       <li>Provide Knowledge Hub links</li>
+      <li>Re-type cancel to <strong>restart</strong>the workflow</li>
     </ul>
   </div>
 
@@ -180,12 +181,12 @@
 
     </ul>
     <br>
-    <strong>Accepted proofs (for input):</strong>
+    <strong>Accepted keywords for proof (for input):</strong>
     <ul>
-      <li>official diagnostics</li>
-      <li>medical leave certificate</li>
-      <li>proof of medical charge</li>
-      <li>proof of relationship</li>
+      <li>Official diagnostics</li>
+      <li>Medical leave certificate</li>
+      <li>Proof of medical charge</li>
+      <li>Proof of relationship</li>
     </ul>
   </div>
 </div>
@@ -369,13 +370,13 @@ function processMessage(msg){
 
   if(currentStep==="specialProofs"){
     providedProofs = msg.split(",").map(s=>s.trim().toLowerCase());
-    const allProofs = ["official diagnostics","medical leave certificate","proof of medical charge","proof of relationship"];
+    const allProofs = ["Official diagnostics","Medical leave certificate","Proof of medical charge","Proof of relationship"];
     const missing = allProofs.filter(p=>!providedProofs.includes(p));
     showLoading(()=>{
       addMessage(missing.length>0 ? `Missing proofs: ${missing.join(", ")}` : "All necessary proofs provided.");
       currentStep="scriptSelection";
       addMessage("Select which script to send:");
-      showButtons(["Script 1","Script 2","Script 3","Script 4"], handleOption);
+      showButtons(["Official Diagnostics received","Proof of charge is lacking","No proof provided at all","The guest is not the patient"], handleOption);
     });
   }
 }

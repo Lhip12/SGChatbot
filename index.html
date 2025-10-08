@@ -1,151 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8" />
+<meta charset="UTF-8">
 <title>Service Guarantee Chatbot</title>
 <style>
-  body {
-    font-family: Dengxian, Arial, sans-serif;
-    margin: 0;
-    display: flex;
-    height: 100vh;
-    background: #f5f7fa;
-  }
-
-  .instructions {
-    flex: 1;
-    padding: 20px;
-    background: #fff;
-    overflow-y: auto;
-    border-left: 2px solid #ccc;
-  }
-
-  .instructions h2 {
-    margin-top: 0;
-  }
-
-  .bot-capabilities {
-    background: #e0f0ff;
-    border: 1px solid #99ccff;
-    padding: 10px;
-    margin-bottom: 15px;
-  }
-
-  .kh-links {
-    background: #fff3cd;
-    border-left: 4px solid #ffeeba;
-    padding: 10px;
-    margin-bottom: 15px;
-    font-size: 0.9em;
-  }
-
-  .chat-container {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    background: #e9eff5;
-    padding: 10px;
-    border-right: 2px solid #ccc;
-  }
-
-  .chat-box {
-    flex: 1;
-    padding: 10px;
-    overflow-y: auto;
-  }
-
-  .chat-input {
-    display: flex;
-    padding: 10px;
-    background: #fff;
-    border-top: 1px solid #ccc;
-  }
-
-  .chat-input input {
-    flex: 1;
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 5px;
-    font-family: Dengxian, Arial, sans-serif;
-  }
-
-  .bubble {
-    max-width: 70%;
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 15px;
-    line-height: 1.6;
-    word-break: break-word;
-    font-family: Dengxian, Arial, sans-serif;
-    white-space: pre-wrap;
-  }
-
-  .bot {
-    background: #007bff;
-    color: white;
-    align-self: flex-start;
-  }
-
-  .user {
-    background: #ddd;
-    align-self: flex-end;
-  }
-
-  .button-bubble {
-    display: inline-block;
-    margin: 5px 5px 0 0;
-    padding: 8px 12px;
-    background: #00aaff;
-    color: white;
-    border-radius: 12px;
-    cursor: pointer;
-    font-family: Dengxian, Arial, sans-serif;
-  }
-
-  .script-block {
-    background: #fff3cd;
-    border-left: 4px solid #ffeeba;
-    padding: 10px;
-    margin: 10px 0;
-    white-space: pre-wrap;
-  }
-
-  .loading-dots {
-    display: inline-block;
-  }
-
-  .dot {
-    display: inline-block;
-    width: 6px;
-    height: 6px;
-    margin: 0 2px;
-    background-color: white;
-    border-radius: 50%;
-    animation: bounce 1s infinite;
-  }
-
-  .dot:nth-child(2){ animation-delay: 0.2s; }
-  .dot:nth-child(3){ animation-delay: 0.4s; }
-
-  @keyframes bounce {
-    0%, 80%, 100% { transform: scale(0); }
-    40% { transform: scale(1); }
-  }
-
-  .form-input {
-    display: flex;
-    flex-direction: column;
-    margin: 10px 0;
-  }
-
-  .form-input label {
-    margin: 5px 0 2px 0;
-  }
-
-  .form-input input {
-    padding: 5px;
-    font-family: Dengxian, Arial, sans-serif;
-  }
+body { font-family: Dengxian, Arial, sans-serif; margin:0; display:flex; height:100vh; background:#f5f7fa;}
+.chat-container{flex:3;display:flex;flex-direction:column;background:#e9eff5;padding:10px;border-right:2px solid #ccc;}
+.side-panel{flex:1; background:#fff;padding:10px;overflow-y:auto; border-left:2px solid #ccc;}
+.chat-box{flex:1;padding:10px;overflow-y:auto;}
+.chat-input{display:flex;padding:10px;background:#fff;border-top:1px solid #ccc;}
+.chat-input input{flex:1;padding:10px;border:1px solid #ccc;border-radius:5px;font-family:Dengxian, Arial, sans-serif;}
+.bubble{max-width:70%;padding:10px;margin:10px 0;border-radius:15px;line-height:1.6;word-break:break-word;font-family:Dengxian, Arial, sans-serif;white-space:pre-wrap;}
+.bot{background:#007bff;color:white;align-self:flex-start;}
+.user{background:#ddd;align-self:flex-end;}
+.button-bubble{display:inline-block;margin:5px 5px 0 0;padding:8px 12px;background:#00aaff;color:white;border-radius:12px;cursor:pointer;font-family:Dengxian, Arial, sans-serif;}
+.checkbox-container{margin:5px 0;}
+.checkbox-container input{margin-right:5px;}
+.script-block{background:#fff3cd;border-left:4px solid #ffeeba;padding:10px;margin:10px 0;white-space:pre-wrap;}
 </style>
 </head>
 <body>
@@ -155,37 +26,41 @@
   <div class="chat-input">
     <input id="user-input" type="text" placeholder="Type your message..." />
     <button onclick="sendMessage()">Send</button>
+    <button onclick="restartChat()">Restart</button>
   </div>
 </div>
 
-<div class="instructions">
+<div class="side-panel">
   <h2>Service Guarantee Instructions</h2>
-
   <div class="bot-capabilities">
     <strong>Bot Capabilities:</strong>
     <ul>
       <li>Judge Flight-Hotel Guarantee eligibility</li>
       <li>Guide Special Circumstance cancellation workflow</li>
       <li>Remind agents about missing proofs</li>
-      <li>Provide QA-approved script templates</li>
+      <li>Provide QC/KA-approved script templates</li>
       <li>Provide Knowledge Hub links</li>
     </ul>
   </div>
-
   <div class="kh-links">
     <strong>KH Links:</strong>
     <ul>
-      <li>Flight-Hotel Cancellation Guarantee: http://knowledgehub.basebiz.ctripcorp.com/webapp/sp/servicebible/knowledgesync/selectNew?currentBusinessTypeId=26&businessId=6938&subjectId=67740&sceneId=2523886%2C2523914%2C2523942&locale=en-US</li>
-      <li>Special Circumstance Cancellation Service Guarantee: http://knowledgehub.basebiz.ctripcorp.com/webapp/sp/servicebible/knowledgesync/selectNew?currentBusinessTypeId=26&businessId=6938&subjectId=67740&sceneId=2523886%2C2523914%2C2523977&locale=en-US</li>
-
+      <li>
+        Flight-Hotel Cancellation Guarantee: 
+        <a href="http://knowledgehub.basebiz.ctripcorp.com/webapp/sp/servicebible/knowledgesync/selectNew?currentBusinessTypeId=26&businessId=6938&subjectId=67740&sceneId=2523886%2C2523914%2C2523942&locale=en-US" target="_blank">View KH</a>
+      </li>
+      <li>
+        Special Circumstance Cancellation Service Guarantee: 
+        <a href="http://knowledgehub.basebiz.ctripcorp.com/webapp/sp/servicebible/knowledgesync/selectNew?currentBusinessTypeId=26&businessId=6938&subjectId=67740&sceneId=2523886%2C2523914%2C2523977&locale=en-US" target="_blank">View KH</a>
+      </li>
     </ul>
     <br>
-    <strong>Accepted proofs (for input):</strong>
+    <strong>Accepted proofs:</strong>
     <ul>
-      <li>official diagnostics</li>
-      <li>medical leave certificate</li>
-      <li>proof of medical charge</li>
-      <li>proof of relationship</li>
+      <li>Official diagnostics</li>
+      <li>Medical leave certificate</li>
+      <li>Proof of medical charge</li>
+      <li>Proof of relationship</li>
     </ul>
   </div>
 </div>
@@ -194,207 +69,157 @@
 const chatBox = document.getElementById("chat-box");
 const userInput = document.getElementById("user-input");
 
-let currentStep = null;
-let currentScenario = null;
 let providedProofs = [];
-let specialType = null;
+let currentScenario = null;
+let specialEvent = null;
 
+// Scripts
 const scripts = {
-  1: `Greetings from Trip.com!
-
-I'm so sorry to hear that you/your xxx is not able to travel due to xx(covid,surgery...), we understand that this is something that out of your control, and we'd definitely love to help you to reduce your loss as much as possible.
-
-Unfortunately, as we negotiated with our hotel partner Ms/Mr xx, we're unable to secure an agreement of the free cancellation with hotel.
-
-Now we'd like to seek another option which would be helpful for the free cancellation process. We sincerely appreciate if you could provide us with the following medical documentations:
-
-1. Official Diagnostics  （Well Received）
-2. Medical Leave Certificate （Need to be collected before deadline）
-3. Proof of Medical Charge（Need to be collected before deadline）(According to the actual situation）
-
-We understand it may take time for you to get these proof from the hospital/clinic, please kindly provide us with the documents before the ddl xxx
-
-Thus we can review all the documents to check if it's possible to help you to save your loss of this reservation.
-
-We understand that due to health coverage, medical insurance of some countries,you may not have those ,please kindly feel free to let us know. We'll still try our best to assist you.
-
-Thank you so much for your support !`,
-
-  2: `Dear [Guest's Name],
-
-We hope this message finds you well. We were truly saddened to learn about your medical situation, and we want to extend our heartfelt sympathy and support during this challenging time.
-
-Regarding your booking, we have made every effort to liaise with the hotel and have communicated your circumstances to them. 
-
-Unfortunately, due to the original non-refundable and non-changeable policy, the hotel staff, [Staff Member's Name], was unable to authorize a free modification or cancellation. We sincerely apologize for any inconvenience this may cause, as we are bound by the hotel's policies and cannot make changes without their consent.
-
-However, there is still a possibility for us to assist you with a free cancellation request. We recommend obtaining assistance from the hospital to provide the necessary documentation, which includes:
-
-1.Official Diagnostic Report (already received)
-2.Medical Leave Certificate (already received)
-3.Proof of Payment to the Hospital (still needed, you may provide it by ××× .*please inform us if it was covered by insurance)
-
-Once you have these documents, please forward them to us, and we will promptly consult with our relevant team to pursue the cancellation request on your behalf.
-
-We apologize once again for any inconvenience and appreciate your understanding. Please take care of yourself, and do not hesitate to reach out if you have any further questions or need additional assistance.`,
-
-  3: `I am very sorry to inform you that I have tried my best to coordinate with the supplier and explained your situation to hotel staff, but they couldn't agree to modify or cancel this booking for free because the original policy of the booking is non-refundable and non-changeable.
-
-As the hotel policy is strict, if without their permission, I am afraid that I couldn't directly modify or cancel it for you. Please accept our sincere apologies, we know this may not be the preferred outcome, however, it is out of our control, and we are obligated to abide by the hotel-imposed penalties.
-
-We understand that you need to cancel the booking due to health issues, please know that we are concerned about your well-being and wish you a speedy recovery. Trip.com is willing to assist you. Please provide the following supporting documents for our team to review before XXX（Deadline）:
-
-1. Official Diagnostics  （Not Received）
-2. Medical Leave Certificate （Not Received）
-3. Proof of Medical Charge （Not Received）
-
-We hope this helps you to proceed with the cancellation request properly. Thank you for your understanding and support.`,
-
-  4: `Dear [Guest's Name],
-
-If you are not the patient and this booking is made on behalf of someone else, please ensure the relationship proof is attached along with the medical documentation. 
-
-Our team will review all documents carefully to see if free cancellation is possible. Thank you for your cooperation.`
+  "Official diagnostics": `Greetings from Trip.com!\n\nI'm so sorry to hear that you/your xxx is not able to travel due to xx(covid,surgery...), we understand that this is something that out of your control, and we'd definitely love to help you reduce your loss.\n\nUnfortunately, as we negotiated with our hotel partner Ms/Mr xx, we're unable to secure an agreement of the free cancellation with hotel.\n\nNow we'd like to seek another option which would be helpful for the free cancellation process. We sincerely appreciate if you could provide us with the following medical documentations:\n\n1. Official Diagnostics / Medical Record （Well Received）\n2. Medical Leave Certificate （Need to be collected before deadline）\n3. Proof of Medical Charge（Need to be collected before deadline）\n\nThank you for your support!`,
+  "Medical leave certificate": `Greetings from Trip.com!\n\nI'm so sorry to hear that you/your xxx is not able to travel due to xx(covid,surgery...), we understand that this is something that out of your control, and we'd definitely love to help you reduce your loss.\n\nUnfortunately, as we negotiated with our hotel partner Ms/Mr xx, we're unable to secure an agreement of the free cancellation with hotel.\n\nNow we'd like to seek another option which would be helpful for the free cancellation process. We sincerely appreciate if you could provide us with the following medical documentations:\n\n1. Official Diagnostics / Medical Record – Need to be collected\n2. Medical Leave Certificate （Well Received）\n3. Proof of Medical Charge（Need to be collected before deadline）\n\nThank you for your support!`,
+  "No proof": `I am very sorry to inform you that I have tried my best to coordinate with the supplier and explained your situation to hotel staff, but they couldn't agree to modify or cancel this booking for free because the original policy of the booking is non-refundable and non-changeable.\n\nPlease provide the following supporting documents for our team to review before XXX（Deadline）:\n1. Official Diagnostics  （Not Received）\n2. Medical Leave Certificate （Not Received）\n3. Proof of Medical Charge （Not Received）\n\nIf you encounter difficulties in providing Proof of Medical Charge due to health coverage, medical insurance, or other reasons, please inform us of any special circumstances.\n\nThank you for your understanding.`,
+  "Guest is not the patient": `Dear [Guest's Name],\n\nI am very sorry to inform you that I have tried my best to coordinate with the supplier and explained your situation to the hotel staff. Still, they couldn't agree to modify or cancel this booking for free because the original policy is non-refundable and non-changeable.\n\nWe are really sorry to hear about what happened (state what specifically happened). I see that you’ve already shared a medical certificate and proof of charges. However, we might ask for additional documents:\n• Doctor’s note confirming that your wife/husband/child/parents etc, is unfit to travel.\n• Proof of relationship (marriage certificate/birth certificate).\n\nThese are necessary to validate the request and assist further.`
 };
 
-// Triple-dot typing
-function showLoading(callback){
-  const loadingDiv = document.createElement("div");
-  loadingDiv.className="bubble bot";
-  loadingDiv.innerHTML='<span class="loading-dots"><span class="dot"></span><span class="dot"></span><span class="dot"></span></span>';
-  chatBox.appendChild(loadingDiv);
-  chatBox.scrollTop = chatBox.scrollHeight;
-  setTimeout(()=>{
-    chatBox.removeChild(loadingDiv);
-    callback();
-  },800);
-}
-
+// Add message
 function addMessage(text,sender="bot"){
-  const bubble = document.createElement("div");
+  const bubble=document.createElement("div");
   bubble.className=`bubble ${sender}`;
   bubble.textContent=text;
   chatBox.appendChild(bubble);
-  chatBox.scrollTop = chatBox.scrollHeight;
+  chatBox.scrollTop=chatBox.scrollHeight;
 }
 
+// Show clickable buttons
 function showButtons(options,callback){
-  const bubble = document.createElement("div");
+  const bubble=document.createElement("div");
   bubble.className="bubble bot";
-  options.forEach((opt,i)=>{
-    const btn = document.createElement("div");
+  options.forEach(opt=>{
+    const btn=document.createElement("div");
     btn.className="button-bubble";
     btn.textContent=opt;
-    btn.onclick = ()=>{addMessage(opt,"user"); callback(i+1);}
+    btn.onclick=()=>{ addMessage(opt,"user"); callback(opt); }
     bubble.appendChild(btn);
   });
   chatBox.appendChild(bubble);
-  chatBox.scrollTop = chatBox.scrollHeight;
+  chatBox.scrollTop=chatBox.scrollHeight;
 }
 
-function handleOption(opt){
-  if(currentStep==="selectScenario"){
-    currentScenario=opt;
-    if(opt===1){
-      currentStep="fhDates";
-      showLoading(()=>{
-        addMessage("Flight-Hotel Guarantee selected. Please fill out the dates:");
-        addFhForm();
-      });
-    } else if(opt===2){
-      currentStep="specialType";
-      showLoading(()=>{
-        addMessage("Select Special Circumstance type:");
-        showButtons(["Not suitable for travel","Be hospitalized","Fracture","Pregnancy","Mental health","Death"],handleSpecialType);
-      });
-    }
-  } else if(currentStep==="scriptSelection"){
-    insertScript(opt);
-  }
+// Parse proof selection and show correct script
+function parseProofSelection(){
+  if(providedProofs.length===0) addMessage(scripts["No proof"]);
+  else if(providedProofs.includes("Official diagnostics") && providedProofs.length===1) addMessage(scripts["Official diagnostics"]);
+  else if(providedProofs.includes("Medical leave certificate") && providedProofs.length===1) addMessage(scripts["Medical leave certificate"]);
+  else if(providedProofs.includes("Guest is not the patient")) addMessage(scripts["Guest is not the patient"]);
+  else addMessage("Multiple proofs selected. Custom script can be reviewed.");
 }
 
-function handleSpecialType(opt){
-  const types=["Not suitable for travel","Be hospitalized","Fracture","Pregnancy","Mental health","Death"];
-  specialType = types[opt-1];
-  showLoading(()=>{
-    addMessage(`Special Circumstance selected: ${specialType}`);
-    currentStep="specialProofs";
-    addMessage("Enter proofs currently provided (comma separated):");
-  });
+// Restart chat
+function restartChat(){
+  chatBox.innerHTML="";
+  providedProofs=[];
+  currentScenario=null;
+  specialEvent=null;
+  addMessage("👋 Chat restarted. Please select your scenario:");
+  showButtons(["Flight-Hotel Guarantee","Special Circumstance"],handleScenario);
 }
 
-function insertScript(num){
-  if(scripts[num]){
-    const block = document.createElement("div");
-    block.className="script-block";
-    block.textContent=`Script selected →\n\n${scripts[num]}`;
-    chatBox.appendChild(block);
-    chatBox.scrollTop = chatBox.scrollHeight;
-  }
+// Handle scenario selection
+function handleScenario(option){
+  if(option==="Flight-Hotel Guarantee") addFhForm();
+  if(option==="Special Circumstance") startSpecialCircumstance();
 }
 
-// Flight-Hotel form
-function addFhForm(){
-  const formDiv = document.createElement("div");
-  formDiv.className="form-input";
-  formDiv.innerHTML=`
-    <label>Affected flight date:</label>
-    <input id="fh-flight" type="date" />
-    <label>Hotel check-in date:</label>
-    <input id="fh-checkin" type="date" />
-    <button id="fh-submit">Submit</button>
-  `;
-  chatBox.appendChild(formDiv);
-  chatBox.scrollTop = chatBox.scrollHeight;
-  document.getElementById("fh-submit").onclick=()=>{
-    const flightDate = new Date(document.getElementById("fh-flight").value);
-    const hotelDate = new Date(document.getElementById("fh-checkin").value);
-    const eligible = flightDate > hotelDate ? false : true;
-    showLoading(()=>{
-      addMessage(eligible ? "✅ Flight-Hotel Guarantee eligible based on dates" : "❌ Flight-Hotel Guarantee not applicable (hotel check-in not affected)");
-      currentStep="completed";
-    });
-  };
-}
-
-function processMessage(msg){
-  if(msg.toLowerCase()==="cancel"){
-    currentStep="selectScenario";
-    showLoading(()=>{
-      addMessage("👋 Welcome! Select a workflow:");
-      showButtons(["Flight-Hotel Guarantee","Special Circumstance"],handleOption);
-    });
-    return;
-  }
-
-  if(currentStep==="specialProofs"){
-    providedProofs = msg.split(",").map(s=>s.trim().toLowerCase());
-    const allProofs = ["official diagnostics","medical leave certificate","proof of medical charge","proof of relationship"];
-    const missing = allProofs.filter(p=>!providedProofs.includes(p));
-    showLoading(()=>{
-      addMessage(missing.length>0 ? `Missing proofs: ${missing.join(", ")}` : "All necessary proofs provided.");
-      currentStep="scriptSelection";
-      addMessage("Select which script to send:");
-      showButtons(["Script 1","Script 2","Script 3","Script 4"], handleOption);
-    });
-  }
-}
-
-userInput.addEventListener("keydown",function(e){
-  if(e.key==="Enter") sendMessage();
-});
+// Enable Enter key
+userInput.addEventListener("keypress",function(e){ if(e.key==="Enter"){ sendMessage(); } });
 
 function sendMessage(){
-  const text = userInput.value.trim();
+  const text=userInput.value.trim();
   if(!text) return;
   addMessage(text,"user");
   userInput.value="";
-  processMessage(text);
 }
 
-// Initial welcome
-addMessage("👋 Welcome! Type 'Cancel' to begin a Service Guarantee workflow.","bot");
-</script>
+// Flight-Hotel Guarantee workflow
+function addFhForm(){
+  addMessage("Was the guest's flight booked with Trip.com?");
+  showButtons(["Yes","No"],resp=>{
+    if(resp==="Yes"){
+      addMessage("Is the notice time of flight involuntary change made after the guest made the booking?");
+      showButtons(["Yes","No"],resp2=>{
+        if(resp2==="Yes"){
+          addMessage("Has the hotel check-in date passed?");
+          showButtons(["Yes","No"],resp3=>{
+            if(resp3==="No"){
+              const formDiv=document.createElement("div");
+              formDiv.className="form-input";
+              formDiv.innerHTML=`
+                <label>Affected flight date:</label>
+                <input id="fh-flight" type="date" />
+                <label>Hotel check-in date:</label>
+                <input id="fh-checkin" type="date" />
+                <button id="fh-submit">Submit</button>
+              `;
+              chatBox.appendChild(formDiv);
+              chatBox.scrollTop=chatBox.scrollHeight;
+              document.getElementById("fh-submit").onclick=()=>{
+                const flightDate=new Date(document.getElementById("fh-flight").value);
+                const hotelDate=new Date(document.getElementById("fh-checkin").value);
+                const eligible=flightDate <= hotelDate;
+                showLoading(()=>{ addMessage(eligible?"✅ Flight-Hotel Guarantee eligible based on dates":"❌ Flight-Hotel Guarantee not applicable (hotel check-in not affected)"); });
+              };
+            } else addMessage("Please process as normal cancellation.");
+          });
+        } else addMessage("Please process as normal cancellation.");
+      });
+    } else addMessage("Please process as normal cancellation.");
+  });
+}
 
+// Special Circumstance workflow including death and mental health
+function startSpecialCircumstance(){
+  addMessage("Select reason:");
+  showButtons(["Not suitable for travel","Be hospitalized","Fracture","Pregnancy","Mental health","Death"],reason=>{
+    currentScenario=reason;
+    if(reason==="Death"){
+      addMessage("No proof is needed. Remark: 'canceled due to death'. Please indicate the relationship to the deceased.");
+    } else if(reason==="Mental health"){
+      addMessage("Is there a cancellation ticket in processing?");
+      showButtons(["Yes","No"],ans=>{
+        if(ans==="Yes") addMessage("Please expedite and remark: 'Guest requests cancellation due to mental health issues, please escalate'.");
+        else addMessage("Create Other>Other event and escalate to CS");
+      });
+    } else startSpecialCircumstanceProof();
+  });
+}
+
+function startSpecialCircumstanceProof(){
+  addMessage("Please select proof(s) the guest has provided:");
+  const bubble=document.createElement("div");
+  bubble.className="bubble bot";
+  ["Official diagnostics","Medical leave certificate","Proof of medical charge","Proof of relationship"].forEach(proof=>{
+    const cbDiv=document.createElement("div");
+    cbDiv.className="checkbox-container";
+    const cb=document.createElement("input");
+    cb.type="checkbox"; cb.value=proof;
+    const label=document.createElement("label"); label.textContent=proof;
+    cbDiv.appendChild(cb); cbDiv.appendChild(label); bubble.appendChild(cbDiv);
+  });
+  const btn=document.createElement("button"); btn.textContent="Submit Proof Selection";
+  btn.onclick=()=>{
+    const checkboxes=bubble.querySelectorAll("input");
+    providedProofs=[];
+    checkboxes.forEach(cb=>{ if(cb.checked) providedProofs.push(cb.value); });
+    parseProofSelection();
+  };
+  bubble.appendChild(btn);
+  chatBox.appendChild(bubble);
+  chatBox.scrollTop=chatBox.scrollHeight;
+}
+
+// Initialize
+restartChat();
+
+</script>
 </body>
 </html>
